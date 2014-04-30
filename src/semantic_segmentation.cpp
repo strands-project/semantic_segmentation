@@ -47,7 +47,7 @@ class PointReader{
   ros::Publisher pub;
 
 public:
-  PointReader(std::string cloud_topic, std::string transform_topic, std::string config_file) : tf(), cloud_topic(cloud_topic), transform_topic(transform_topic){
+  PointReader(std::string cloud_topic, std::string transform_topic, std::string config_file, std::string forest_file) : tf(), cloud_topic(cloud_topic), transform_topic(transform_topic){
     cloud_sub.subscribe(nh, cloud_topic, 10);
     tf_filter = new tf::MessageFilter<sensor_msgs::PointCloud2>(cloud_sub, tf, transform_topic, 10);
     tf_filter->registerCallback( boost::bind(&PointReader::PointCloudCallback, this, _1) );
@@ -60,7 +60,7 @@ public:
     int load_requirements = 0;
 
     //Load the forest.
-    forest = Rdfs::Forest::Load(config_file);
+    forest = Rdfs::Forest::LoadByFilename(forest_file);
     load_requirements |= forest->GetFeatureRequirements();
     
     //setup the crf evaluator.
@@ -81,7 +81,8 @@ private:
     //Convert so that we can use the cloud.
     pcl::PointCloud<pcl::PointXYZRGB> cloud;
     pcl::fromROSMsg(*sensor_msg, cloud);
-    
+   
+    //Needed as somewhere the correct size of the cloud gets lost.
     cloud.width = 640;
     cloud.height = 480; 
 
@@ -92,7 +93,7 @@ private:
     tf::Quaternion q = t.getRotation();
     Eigen::Quaterniond q_eigen;
     tf::quaternionTFToEigen(q, q_eigen);	
-    std::cout <<  q_eigen.matrix() << std::endl; //Just for testing.
+    // std::cout <<  q_eigen.matrix() << std::endl; //Just for testing.
     
     //Do the actual computations here. 
     Utils::DataImage current_image; 
@@ -103,12 +104,13 @@ private:
     cv::Mat segmentation_result(current_image.Height(), current_image.Width(), CV_8SC1);
     crf_evaluator.Evaluate(current_image, segmentation_result);
 
-    //Write out the result. 
-    cv::Mat result = data->GetColorCoding()->LabelToBgr(segmentation_result);
-    cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
-    cv::imshow( "Display window", result );                   // Show our image inside it.
-    cv::waitKey(0);
+    //Show the result directly in a cv window. 
+    //cv::Mat result = data->GetColorCoding()->LabelToBgr(segmentation_result);
+    //cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
+    //cv::imshow( "Display window", result );                   // Show our image inside it.
+    //cv::waitKey(0);
 
+    //Write out the result. 
     int index=0;
     cv::Mat result_bgr = data->GetColorCoding()->LabelToBgr(segmentation_result);
     for(int y=0; y < cloud.height; ++y){
@@ -131,12 +133,12 @@ private:
 
 int main(int argc, char** argv){
   ros::init(argc, argv, "semantic_segmentation");
-  if(argc !=4){
-    std::cout << "Wrong number of arguments. Correct usage is: " << argv[0] << " <cloud_topic> <transform_topic> <semantic_config_file" << std::endl; 
+  if(argc !=5){
+    std::cout << "Wrong number of arguments. Correct usage is: " << argv[0] << " <cloud_topic> <transform_topic> <semantic_config_file> <forest_file>" << std::endl; 
   }
 
   //Setup subcribers
-  PointReader test(argv[1], argv[2], argv[3]);
+  PointReader test(argv[1], argv[2], argv[3], argv[4]);
 
   //Spin
   ros::spin(); 
