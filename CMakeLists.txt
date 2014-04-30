@@ -98,7 +98,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  ${PCL_INCLUDE_DIRS}i
+  ${PCL_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${RGBD_Semantic_Segmentation_SOURCE_DIR}
 )
