@@ -373,7 +373,6 @@ Utils::DataImage NYUDepthV1::GenerateImage(const pcl::PointCloud<pcl::PointXYZRG
     }
 
     image.AddRGBImage(bgr);
-    std::cout << cloud.width << " " << cloud.height << std::endl;
 
     //Compute the LAB image, but only keep the RGB image if it is needed.
     image.ComputeLABImage(m_load_requirement_flags & Utils::RGB);
