@@ -297,7 +297,9 @@ public:
 
     static bool m_use_rectification_instead_accelerometer;      /// @brief If this is true an alternative rectification algorithm is used instead of the accelerometer data.
 // static std::vector<std::string> m_segmentation_directories; /// @brief used to store directories which contain segmentations of the images.
-
+   
+    // Calibrations
+    static bool m_has_calibration;
 
     // Color calibration
     static float m_fx_rgb;

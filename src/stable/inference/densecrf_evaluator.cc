@@ -40,24 +40,6 @@ DenseCRFEvaluator::DenseCRFEvaluator(){
 DenseCRFEvaluator::DenseCRFEvaluator(std::string config_filename){
   Utils::Configuration configuration(config_filename);
 
-  //Set intrinsic params!
-  std::string rgb_calib_filename = configuration.read<std::string>("color_calibration_filename");
-  std::ifstream in(rgb_calib_filename.c_str());
-  if (!in) {
-    std::cerr << "Cannot open file " << rgb_calib_filename << std::endl;
-  }
-  float tmp;
-  in >> tmp; m_fx_rgb = tmp;//(0,0)
-  in >> tmp; //(0,1);
-  in >> tmp; m_cx_rgb = tmp;//(0,2);
-  in >> tmp; //(1,0);
-  in >> tmp; m_fy_rgb = tmp;//(1,1);
-  in >> tmp; m_cy_rgb = tmp;//(1,2);
-  m_fx_rgb_inv = 1.0f/m_fx_rgb;
-  m_fy_rgb_inv = 1.0f/m_fy_rgb;
-  in.close();
-
-
   m_smoothing_weight = configuration.read<float>("smoothing_weight");
   m_color_term_weight = configuration.read<float>("color_term_weight");
   m_depth_term_weight = configuration.read<float>("depth_term_weight");

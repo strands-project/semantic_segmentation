@@ -47,6 +47,8 @@ inline float sign(float f) {
 }
 
 // Needed to link to the actual static variables.
+bool DataImage::m_has_calibration;
+
 float DataImage::m_fx_rgb;
 float DataImage::m_fy_rgb;
 float DataImage::m_fx_rgb_inv;
@@ -1174,6 +1176,9 @@ float DataImage::GetGradient3dPatch(int x, int y, int gradient_band, int patch_w
 //}
 
 void DataImage::LoadAndUndistortDepthPlusRGB(const std::string& rgb_filename, const std::string& depth_filename, const std::string& accelerometer_filename) {
+  if(!m_has_calibration){
+    std::runtime_error("Error: Trying to use a calibration while it is not set.");
+  }
   AddRGBImage(rgb_filename);
   AddDepthImage(depth_filename, true);
   AddAccelerometerData(accelerometer_filename);
@@ -1400,6 +1405,7 @@ void DataImage::SetRGBIntrinsic(std::string rgb_camera_calibration_filename) {
 
   if(!in) {
     std::cerr << "Cannot open file " << rgb_camera_calibration_filename << std::endl;
+    return;
   }
 
   float tmp;
@@ -1443,6 +1449,7 @@ void DataImage::SetRGBAndDepthIntrinsic(std::string rgb_camera_calibration_filen
 
   if(!in) {
     std::cerr << "Cannot open file " << depth_camera_calibration_filename << std::endl;
+    return;
   }
 
   double tmp;
@@ -1504,7 +1511,13 @@ void DataImage::Initialize(Utils::Configuration configuration) {
   //Set intrinsic params!
   std::string rgb_calib_filename = configuration.read<std::string> ("color_calibration_filename", "");
   std::string depth_calib_filename = configuration.read<std::string> ("depth_calibration_filename", "");
-  SetRGBAndDepthIntrinsic(rgb_calib_filename, depth_calib_filename);
+  if(rgb_calib_filename==std::string("") || depth_calib_filename==std::string("")){
+    //No calibration filenames are set.
+    m_has_calibration=false;
+  }else{
+    SetRGBAndDepthIntrinsic(rgb_calib_filename, depth_calib_filename);
+    m_has_calibration=true;
+  }
 
   // Read the configuration paramaters
   m_baseline_focal = configuration.read<float> ("baseline_focal", 0.0f);
@@ -1548,6 +1561,10 @@ void DataImage::GetSequenceRgbParameters(double& fx, double& fy, double& cx, dou
 
 
 cv::Mat DataImage::ProcessRawDepthImage(cv::Mat raw_depth) {
+  if(!m_has_calibration){
+    std::runtime_error("Error: Trying to use a calibration while it is not set.");
+  }
+  
   const int width = raw_depth.cols;
   const int height = raw_depth.rows;
   // Reproject the depth image onto the rgb plane and save the values as float values.
@@ -1914,6 +1931,10 @@ void DataImage::Compute3DCovariance() {
     throw std::runtime_error("Error: Could not compute 3D covariance as no depth image was loaded!");
   }
 
+  if(!m_has_calibration){
+    std::runtime_error("Error: Trying to use a calibration while it is not set.");
+  }
+
   m_3d_covariance = cv::Mat(m_height, m_width, CV_32FC(9));
 
   Eigen::Matrix3f covariance;
@@ -2037,6 +2058,11 @@ pcl::PointCloud< pcl::PointXYZ >::Ptr DataImage::GetPointCloud() const {
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr DataImage::ComputePointCloudFromDepth() {
   // load point cloud
+  
+  if(!m_has_calibration){
+    std::runtime_error("Error: Trying to use a calibration while it is not set.");
+  }
+
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
   cloud->height = m_height;
   cloud->width = m_width;

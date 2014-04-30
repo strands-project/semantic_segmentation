@@ -36,12 +36,6 @@ public:
   int GetLoadRequirements();
 
 private:
-  float m_fx_rgb;
-  float m_fy_rgb;
-  float m_fx_rgb_inv;
-  float m_fy_rgb_inv;
-  float m_cx_rgb;
-  float m_cy_rgb;
   float m_smoothing_weight;
   float m_color_term_weight;
   float m_depth_term_weight;
