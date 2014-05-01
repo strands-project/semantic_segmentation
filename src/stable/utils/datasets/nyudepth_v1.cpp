@@ -319,11 +319,10 @@ Utils::DataImage NYUDepthV1::GenerateImage(const pcl::PointCloud<pcl::PointXYZRG
   cloud_xyz_ptr->resize(cloud.width * cloud.height);
   for(size_t i = 0; i < cloud.points.size(); i++) {
     Eigen::Vector3f p(cloud.points[i].x, cloud.points[i].z, cloud.points[i].y);
-    Eigen::Vector3f rect = q*p; 
     
-    cloud_xyz_ptr->points[i].x = p(0);
-    cloud_xyz_ptr->points[i].y = p(2);
-    cloud_xyz_ptr->points[i].z = p(1);
+    cloud_xyz_ptr->points[i].x = cloud.points[i].x;
+    cloud_xyz_ptr->points[i].y = cloud.points[i].y;
+    cloud_xyz_ptr->points[i].z = cloud.points[i].z;
   }
   
 
@@ -418,9 +417,8 @@ Utils::DataImage NYUDepthV1::GenerateImage(const pcl::PointCloud<pcl::PointXYZRG
 
     image.AddDepthImage(depth);
     if(m_load_requirement_flags & Utils::ACCELEROMETER) {
-      //Load the accelerometer data.
-      //image.AddAccelerometerData(q);
-      image.AddAccelerometerData(Eigen::Matrix3f::Identity());
+      //Load the rotation data.
+      image.AddAccelerometerData(q);
     }
 
     if(m_load_requirement_flags & Utils::DEPTH_COVARIANCE) {
