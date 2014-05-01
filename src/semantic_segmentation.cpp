@@ -109,8 +109,6 @@ private:
 
     //Parse the transform. 
     tf::StampedTransform t;
-    //TODO Pay attention here! This should be tested with the actual data on the robot! 
-    
     ros::Time now = sensor_msg->header.stamp;
     tf.waitForTransform(transform_topic1, transform_topic2, now, ros::Duration(1.0));
     tf.lookupTransform(transform_topic1, transform_topic2, now, t);
@@ -127,7 +125,7 @@ private:
     transformation(5) = sin(angle);
     transformation(7) = -transformation(5);
     transformation(8) = transformation(4);
-    std::cout << angle << std::endl;
+    //std::cout << angle << std::endl;
     // std::cout << transformation << std::endl;
     
     //Do the actual computations here. 

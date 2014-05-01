@@ -1834,8 +1834,14 @@ void DataImage::ComputeDepthNormalization() {
 
   for(int y = 0; y < m_height; ++y) {
     for(int x = 0; x < m_width; ++x) {
-      if(temp2[x] < m_depth_image.at<float> (y, x)) {
-        temp2[x] = m_depth_image.at<float> (y, x);
+      float depth = m_depth_image.at<float> (y, x); 
+      Eigen::Vector3f point;
+      point << (static_cast<float>(x) - m_cx_rgb) * m_fx_rgb_inv * depth,
+        (static_cast<float>(y) - m_cy_rgb) * m_fy_rgb_inv * depth,
+        depth;
+      Eigen::Vector3f rectified = m_accelerometer_rotation * point;
+      if(temp2[x] < rectified(2)){
+        temp2[x] = rectified(2);
       }
     }
   }
