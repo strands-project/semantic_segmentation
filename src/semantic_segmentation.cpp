@@ -40,8 +40,9 @@ class PointReader{
   tf::MessageFilter<sensor_msgs::PointCloud2> * tf_filter;
   message_filters::Subscriber<sensor_msgs::PointCloud2> cloud_sub;
   std::string cloud_topic; 
-  std::string transform_topic1; 
-  std::string transform_topic2; 
+  std::string transform_frame1; 
+  std::string transform_frame2; 
+  std::string out_topic; 
   Utils::DynamicDataset* data;
   Utils::Configuration config;
   Rdfs::Forest * forest;
@@ -50,9 +51,9 @@ class PointReader{
   ros::Subscriber cam_info_sub;
 
 public:
-  PointReader(std::string cloud_topic, std::string transform_topic1, std::string transform_topic2, std::string config_file, std::string forest_file) : tf(), cloud_topic(cloud_topic), transform_topic1(transform_topic1), transform_topic2(transform_topic2){
+  PointReader(ros::NodeHandle nh, std::string cloud_topic, std::string out_topic, std::string transform_frame1, std::string transform_frame2, std::string config_file, std::string forest_file) : nh(nh), cloud_topic(cloud_topic), transform_frame1(transform_frame1), transform_frame2(transform_frame2), out_topic(out_topic){
     cloud_sub.subscribe(nh, cloud_topic, 10);
-    tf_filter = new tf::MessageFilter<sensor_msgs::PointCloud2>(cloud_sub, tf, transform_topic1, 10);
+    tf_filter = new tf::MessageFilter<sensor_msgs::PointCloud2>(cloud_sub, tf, transform_frame1, 10);
     tf_filter->registerCallback( boost::bind(&PointReader::PointCloudCallback, this, _1) );
     
     //Subscribe to camera info callback. 
@@ -78,7 +79,7 @@ public:
     //Set the load requirements for the dataset, specified by the other components.
     data->SetLoadFlags(load_requirements);
 
-    pub = nh.advertise<sensor_msgs::PointCloud2> ("output", 1);
+    pub = nh.advertise<sensor_msgs::PointCloud2> (out_topic, 1);
   }
 
 private:
@@ -110,8 +111,8 @@ private:
     //Parse the transform. 
     tf::StampedTransform t;
     ros::Time now = sensor_msg->header.stamp;
-    tf.waitForTransform(transform_topic1, transform_topic2, now, ros::Duration(1.0));
-    tf.lookupTransform(transform_topic1, transform_topic2, now, t);
+    tf.waitForTransform(transform_frame1, transform_frame2, now, ros::Duration(1.0));
+    tf.lookupTransform(transform_frame1, transform_frame2, now, t);
     tf::Quaternion q = t.getRotation();
     Eigen::Quaterniond q_eigen;
     tf::quaternionTFToEigen(q, q_eigen);	
@@ -166,13 +167,50 @@ private:
 
 int main(int argc, char** argv){
   ros::init(argc, argv, "semantic_segmentation");
-  if(argc !=6){
-    std::cout << "Wrong number of arguments. Correct usage is: " << argv[0] << " <cloud_topic> <transform_topic1> <transform_topic2> <semantic_config_file> <forest_file>" << std::endl;
-   return 1; 
+  
+  ros::NodeHandle nh("~");
+  
+  std::string  cloud_topic;
+  nh.param("input_topic", cloud_topic, std::string("")); 
+  if(cloud_topic.empty()) {
+    ROS_ERROR("No input topic specified. Please set the 'input_topic' parameter.");
+    exit(1);
+  }
+  
+  std::string transform_frame1;
+  nh.param("ptu_tilt_motor_frame", transform_frame1, std::string(""));
+  if(transform_frame1.empty()) {
+    ROS_ERROR("'ptu_tilt_motor_frame' is not set. Please specify the correct tf-frame");
+    exit(1);
+  }     
+  
+  std::string transform_frame2;
+  nh.param("ptu_hinge_frame", transform_frame2, std::string("")); 
+  if(transform_frame2.empty()) {
+    ROS_ERROR("'ptu_hinge_frame' is not set. Please specify the correct tf-frame");
+    exit(1);
   }
 
+  std::string config_file;
+  nh.param("semantic_config_file", config_file, std::string(""));
+  if(config_file.empty()) {
+    ROS_ERROR("No config file specified, please set 'semantic_config_file'.");
+    exit(1);
+  }
+
+  std::string forest_file;
+  nh.param("semantic_forest_model", forest_file, std::string("")); 
+  if(forest_file.empty()) {
+    ROS_ERROR("No model for the randomized decision forests is set. Please specify it in 'semantic_forest_model'.");
+    exit(1);
+  }
+
+  std::string out_topic;
+  nh.param("output_topic", out_topic, std::string("output"));
+
+
   //Setup subcribers
-  PointReader test(argv[1], argv[2], argv[3], argv[4], argv[5]);
+  PointReader p(nh, cloud_topic, out_topic, transform_frame1, transform_frame2, config_file, forest_file);
 
   //Spin
   ros::spin(); 

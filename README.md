@@ -1,14 +1,15 @@
 semantic_segmentation
 =====================
-Currently the node still needs some parameters. 
-
 Run with:
 
-'''
-rosrun semantic_segmentation semantic_segmentation <pointcloud topic> <tf-frame for camera> <config_file>
-'''
+```bash
+roslaunch semantic_segmentation segment_metric_maps.launch
+```
 
-The config file still needs some adaption in order to point to the correct rdf.dat file for the randomized decision tree data. Both the config file and the rdf file are located in the data folder. 
+There are several parameters which are set to default values in the launch file.
 
-The node will currently open an opencv window to show the result. This will be adapted to whatever needs to happen. 
-
+- `input_topic` The input topic, should always be an intermediate map from the local metric maps node. 
+- `ptu_tilt_motor_frame` The tf-frame for the ptu tilt motor.
+- `ptu_hinge_frame` The tf-frame for the ptu hinge. Although the optical frame for the head xtion should be fine as well.
+- `semantic_config_file` Path to the config file. 
+- `semantic_forest_model` Path to the randomized decision forest file. 
