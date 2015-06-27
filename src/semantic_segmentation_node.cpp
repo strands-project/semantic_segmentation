@@ -65,7 +65,7 @@ std::cerr << "Done" << std::endl;
     //Push it through the voxelization
     std::map<int, std::shared_ptr<Voxel> > voxels;
     _dl.extractVoxels(cloud, voxels);
-    ROS_INFO("Voxelized the cloud, got %u supervoxels.", voxels.size());
+    ROS_INFO("Voxelized the cloud, got %lu supervoxels.", voxels.size());
 
 
     int N = 0;
@@ -77,7 +77,7 @@ std::cerr << "Done" << std::endl;
 
 
 
-    for(int i = 0; i < cloud->size(); i++){
+    for(uint i = 0; i < cloud->size(); i++){
       cloud->points[i].r = 0;
       cloud->points[i].g = 0;
       cloud->points[i].b = 0;
@@ -115,7 +115,7 @@ std::cerr << "Done" << std::endl;
         point_index++;
       }
     }
-    ROS_INFO("Done classifying all the supervoxels. (Total of %lu)", voxels.size());
+    ROS_INFO("Done classifying all the supervoxels.");
 
     //Gather statistics
 
