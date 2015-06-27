@@ -79,6 +79,15 @@ DecisionTree::ptr DecisionTreeLearner::learn(AbstractDataStorage::ptr dataStorag
     const int D = storage->getDimensionality();
     const int C = storage->getClasscount();
 
+    std::vector<float> dist(C,0);
+    for(int sample = 0; sample < dataStorage->getSize(); ++sample){
+      dist[dataStorage->getClassLabel(sample)]++;
+    }
+
+    for(int cls = 0; cls < C; ++cls){
+      dist[cls] =  1.0; //float(dataStorage->getSize())/dist[cls];
+    }
+
 
     state.total = storage->getSize();
 
@@ -110,6 +119,8 @@ DecisionTree::ptr DecisionTreeLearner::learn(AbstractDataStorage::ptr dataStorag
     // We use these arrays during training for the left and right histograms
     EfficientEntropyHistogram leftHistogram(C);
     EfficientEntropyHistogram rightHistogram(C);
+    EfficientEntropyHistogram_t<float> leftWeightedHistogram(C);
+    EfficientEntropyHistogram_t<float> rightWeightedHistogram(C);
 
     // We use this in order to sort the data points
     FeatureComparator cp;
@@ -142,10 +153,12 @@ DecisionTree::ptr DecisionTreeLearner::learn(AbstractDataStorage::ptr dataStorag
         // The right child node contains all training examples
 
         EfficientEntropyHistogram hist(C);
+        EfficientEntropyHistogram_t<float> weightedHist(C);
         for (int m = 0; m < N; m++)
         {
             // Get the class label of this training example
             hist.addOne(storage->getClassLabel(trainingExampleList[m]));
+            weightedHist.add(storage->getClassLabel(trainingExampleList[m]), dist[storage->getClassLabel(trainingExampleList[m])]);
         }
 
         // Don't split this node
@@ -183,6 +196,8 @@ DecisionTree::ptr DecisionTreeLearner::learn(AbstractDataStorage::ptr dataStorag
             // Initialize the histograms
             leftHistogram.reset();
             rightHistogram = hist;
+            leftWeightedHistogram.reset();
+            rightWeightedHistogram = weightedHist;
 
             float leftValue = storage->getDataPoint(trainingExampleList[0])(feature);
             int leftClass = storage->getClassLabel(trainingExampleList[0]);
@@ -196,6 +211,8 @@ DecisionTree::ptr DecisionTreeLearner::learn(AbstractDataStorage::ptr dataStorag
                 // Move the last point to the left histogram
                 leftHistogram.addOne(leftClass);
                 rightHistogram.subOne(leftClass);
+                leftWeightedHistogram.add(leftClass, dist[leftClass]);
+                rightWeightedHistogram.sub(leftClass, dist[leftClass]);
 
                 // It does
                 // Get the two feature values
@@ -212,8 +229,8 @@ DecisionTree::ptr DecisionTreeLearner::learn(AbstractDataStorage::ptr dataStorag
                 }
 
                 // Get the objective function
-                const float localObjective = leftHistogram.getEntropy()
-                        + rightHistogram.getEntropy();
+                const float localObjective = leftWeightedHistogram.getEntropy()
+                        + rightWeightedHistogram.getEntropy();
 
                 if (localObjective < bestObjective)
                 {
