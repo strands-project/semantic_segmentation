@@ -126,7 +126,12 @@ std::cerr << "Done" << std::endl;
     res.label = result_labels;
     res.label_probabilities = result_prob;
     res.label_frequencies = label_frequencies;
-    //what about points?
+    res.points.resize(N);
+    for(uint i = 0; i < cloud->size(); i++){
+      res.points[i].x = cloud->points[i].x;
+      res.points[i].y = cloud->points[i].y;
+      res.points[i].z = cloud->points[i].z;
+    }
 
 
     //Done

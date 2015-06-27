@@ -94,7 +94,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES semantic_segmentation
-  CATKIN_DEPENDS roscpp sensor_msgs std_msgs semantic_map_publisher
+  CATKIN_DEPENDS roscpp sensor_msgs std_msgs geometry_msgs semantic_map_publisher
 #  DEPENDS system_lib
 )
 
