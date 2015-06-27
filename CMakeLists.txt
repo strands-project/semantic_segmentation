@@ -1,21 +1,29 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(semantic_segmentation)
 
+#Flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x")
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
-  tf
-  tf_conversions
+  sensor_msgs
+  geometry_msgs
+  pcl_ros
 )
 
 ## System dependencies are found with CMake's conventions
-find_package(PCL REQUIRED)
-find_package(OpenCV REQUIRED)
+# find_package(Boost REQUIRED COMPONENTS system)
 
-add_subdirectory(src/stable)
+find_package(PCL 1.7 REQUIRED)
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+
+add_subdirectory(src/backend)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -54,11 +62,10 @@ add_subdirectory(src/stable)
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  LabelIntegratedPointCloud.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -68,10 +75,12 @@ add_subdirectory(src/stable)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  sensor_msgs
+  geometry_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -85,8 +94,8 @@ add_subdirectory(src/stable)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES semantic_segmentation
-  CATKIN_DEPENDS libpcl-all-dev roscpp std_msgs tf
-  DEPENDS system_lib PCL eigen opencv
+  CATKIN_DEPENDS roscpp sensor_msgs std_msgs semantic_map_publisher
+#  DEPENDS system_lib
 )
 
 ###########
@@ -98,9 +107,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  ${PCL_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
-  ${RGBD_Semantic_Segmentation_SOURCE_DIR}
+  ${strands_semantic_segmentation_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -109,20 +116,24 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-add_executable(semantic_segmentation src/semantic_segmentation.cpp)
+add_executable(semantic_segmentation_node src/semantic_segmentation_node.cpp ${strands_semantic_segmentation_SOURCES})
+add_executable(dummy_client src/dummy_client.cpp)
+
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(semantic_segmentation_node semantic_segmentation_generate_messages_cpp)
+add_dependencies(semantic_segmentation_node semantic_segmentation_generate_messages_cpp)
+add_dependencies(dummy_client semantic_segmentation_generate_messages_cpp semantic_map_publisher_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(semantic_segmentation
+target_link_libraries(semantic_segmentation_node
+  libforest
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
-  ${OpenCV_LIBS}
-  utils
-  inference
-  randomized_decision_forest
+)
+target_link_libraries(dummy_client
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
 )
 
 #############
