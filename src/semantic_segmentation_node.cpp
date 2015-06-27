@@ -117,7 +117,10 @@ std::cerr << "Done" << std::endl;
     }
     ROS_INFO("Done classifying all the supervoxels.");
 
-    //Gather statistics
+    //Normalize the frequencies.
+    for(int j = 0; j < _C; j++){
+      label_frequencies[j] /= float(N);
+    }
 
 
 
