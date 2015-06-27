@@ -129,8 +129,6 @@ std::cerr << "Done" << std::endl;
     //what about points?
 
 
-    pcl::io::savePCDFileBinary<pcl::PointXYZRGB>("/data/work/strands/test.pcd", *cloud);
-
     //Done
     return true;
   }
