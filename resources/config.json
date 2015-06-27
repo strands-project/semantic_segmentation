@@ -1,0 +1,94 @@
+{
+    //Needed but not used here.
+    "root_dir": "not_needed",
+
+
+     //Color coding of labels
+
+     "color_coding_key" : "object4_color_to_label",
+
+    "object_color_to_label" : [
+        { "name" :  "backpack",             "color" : [128,   0,   0], "label" :  0 },
+        { "name" :  "box",                  "color" : [  0, 128,   0], "label" :  1 },
+        { "name" :  "cabinet",              "color" : [128, 128,   0], "label" :  2 },
+        { "name" :  "ceiling",              "color" : [  0,   0, 128], "label" :  3 },
+        { "name" :  "chair",                "color" : [128,   0, 128], "label" :  4 },
+        { "name" :  "clock",                "color" : [  0, 128, 128], "label" :  5 },
+        { "name" :  "curtain",              "color" : [128, 128, 128], "label" :  6 },
+        { "name" :  "document",             "color" : [ 64,   0,   0], "label" :  7 },
+        { "name" :  "dog",                  "color" : [192,   0,   0], "label" :  8 },
+        { "name" :  "door",                 "color" : [ 64, 128,   0], "label" :  9 },
+        { "name" :  "fire extinguisher",    "color" : [192, 128,   0], "label" : 10 },
+        { "name" :  "floor",                "color" : [ 64,   0, 128], "label" : 11 },
+        { "name" :  "jacket",               "color" : [192,   0, 128], "label" : 12 },
+        { "name" :  "keyboard",             "color" : [ 64, 128, 128], "label" : 13 },
+        { "name" :  "lamp",                 "color" : [192, 128, 128], "label" : 14 },
+        { "name" :  "laptop",               "color" : [  0,  64,   0], "label" : 15 },
+        { "name" :  "monitor",              "color" : [128,  64,   0], "label" : 16 },
+        { "name" :  "mouse",                "color" : [  0, 192,   0], "label" : 17 },
+        { "name" :  "other",                "color" : [128, 192,   0], "label" : 18 },
+        { "name" :  "person",               "color" : [  0,  64, 128], "label" : 19 },
+        { "name" :  "picture",              "color" : [128,  64, 128], "label" : 20 },
+        { "name" :  "plant",                "color" : [  0, 192, 128], "label" : 21 },
+        { "name" :  "prop",                 "color" : [128, 192, 128], "label" : 22 },
+        { "name" :  "shelf",                "color" : [ 64,  64,   0], "label" : 23 },
+        { "name" :  "sign",                 "color" : [192,  64,   0], "label" : 24 },
+        { "name" :  "sofa",                 "color" : [ 64, 192,   0], "label" : 25 },
+        { "name" :  "table",                "color" : [192, 192,   0], "label" : 26 },
+        { "name" :  "towel",                "color" : [ 64,  64, 128], "label" : 27 },
+        { "name" :  "trash",                "color" : [192,  64, 128], "label" : 28 },
+        { "name" :  "wall",                 "color" : [ 64, 192, 128], "label" : 29 },
+        { "name" :  "whiteboard",           "color" : [192, 192, 128], "label" : 30 },
+        { "name" :  "window",               "color" : [  0,   0,  64], "label" : 31 },
+        { "name" :  "void",                 "color" : [  0,   0,   0], "label" : -1 }
+    ],
+
+    "object4_color_to_label" : [
+        { "name" :  "backpack",             "color" : [128,   0,   0], "label" :  0 },
+        { "name" :  "box",                  "color" : [  0, 128,   0], "label" :  0 },
+        { "name" :  "cabinet",              "color" : [128, 128,   0], "label" :  1 },
+        { "name" :  "ceiling",              "color" : [  0,   0, 128], "label" :  2 },
+        { "name" :  "chair",                "color" : [128,   0, 128], "label" :  3 },
+        { "name" :  "clock",                "color" : [  0, 128, 128], "label" :  0 },
+        { "name" :  "curtain",              "color" : [128, 128, 128], "label" :  4 },
+        { "name" :  "document",             "color" : [ 64,   0,   0], "label" :  0 },
+        { "name" :  "dog",                  "color" : [192,   0,   0], "label" :  0 },
+        { "name" :  "door",                 "color" : [ 64, 128,   0], "label" :  0 },
+        { "name" :  "fire extinguisher",    "color" : [192, 128,   0], "label" :  0 },
+        { "name" :  "floor",                "color" : [ 64,   0, 128], "label" :  5 },
+        { "name" :  "jacket",               "color" : [192,   0, 128], "label" :  0 },
+        { "name" :  "keyboard",             "color" : [ 64, 128, 128], "label" :  0 },
+        { "name" :  "lamp",                 "color" : [192, 128, 128], "label" :  0 },
+        { "name" :  "laptop",               "color" : [  0,  64,   0], "label" :  0 },
+        { "name" :  "monitor",              "color" : [128,  64,   0], "label" :  0 },
+        { "name" :  "mouse",                "color" : [  0, 192,   0], "label" :  0 },
+        { "name" :  "other",                "color" : [128, 192,   0], "label" :  0 },
+        { "name" :  "person",               "color" : [  0,  64, 128], "label" :  0 },
+        { "name" :  "picture",              "color" : [128,  64, 128], "label" :  0 },
+        { "name" :  "plant",                "color" : [  0, 192, 128], "label" :  6 },
+        { "name" :  "prop",                 "color" : [128, 192, 128], "label" :  0 },
+        { "name" :  "shelf",                "color" : [ 64,  64,   0], "label" :  7 },
+        { "name" :  "sign",                 "color" : [192,  64,   0], "label" :  0 },
+        { "name" :  "sofa",                 "color" : [ 64, 192,   0], "label" :  3 },
+        { "name" :  "table",                "color" : [192, 192,   0], "label" :  8 },
+        { "name" :  "towel",                "color" : [ 64,  64, 128], "label" :  0 },
+        { "name" :  "trash",                "color" : [192,  64, 128], "label" :  0 },
+        { "name" :  "wall",                 "color" : [ 64, 192, 128], "label" :  9 },
+        { "name" :  "whiteboard",           "color" : [192, 192, 128], "label" :  9 },
+        { "name" :  "window",               "color" : [  0,   0,  64], "label" : 10 },
+        { "name" :  "void",                 "color" : [  0,   0,   0], "label" : -1 }
+    ],
+
+    // VCCS parameters
+    "voxel_resolution" : 0.015,
+    "seed_resolution" : 0.2,
+    "color_importance" : 1.0,
+    "spatial_importance" : 0.5,
+    "normal_importance" : 1.0,
+
+    "min_point_count" : 10,
+
+    "min_split_samples" : 100,
+    "max_depth" : 30,
+    "number_trees" : 128
+}

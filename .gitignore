@@ -88,4 +88,14 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 
+# own stuff
+#for training using my plain executables.
+*/build/*
+#we don't want to forest dat
+resources/*.dat
+#nobody else has push rights anyways.
+scripts/upload_rf.sh
 
+# vim stuff
+*.swp
+*.swo
