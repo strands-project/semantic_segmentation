@@ -24,7 +24,7 @@ int main(int argc, char **argv){
   srv.request.waypoint_id = waypoint;
   srv.request.resolution = 0.01; //is this 1 cm?
   if (client_get_cloud.call(srv)){
-    ROS_INFO("Received cloud! with %ld", srv.response.cloud.data.size());
+    ROS_INFO("Received cloud!");
     sensor_msgs::PointCloud2 integrated_cloud = srv.response.cloud;
     semantic_segmentation::LabelIntegratedPointCloud srv_sem_seg;
     srv_sem_seg.request.integrated_cloud = integrated_cloud;
