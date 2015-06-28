@@ -125,6 +125,25 @@ add_executable(dummy_client src/dummy_client.cpp)
 add_dependencies(semantic_segmentation_node semantic_segmentation_generate_messages_cpp)
 add_dependencies(dummy_client semantic_segmentation_generate_messages_cpp semantic_map_publisher_generate_messages_cpp)
 
+
+#Moved from the backend cmakelist to make them callable from rosrun.
+#train executable.
+add_executable(voxelize ${strands_semantic_segmentation_VOXELIZE_SRCS})
+target_link_libraries(voxelize libforest ${OpenCV_LIBS} ${PCL_COMMON_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES})
+
+#train executable.
+add_executable(semantic_segmentation_train ${strands_semantic_segmentation_SEM_TRAIN_SRCS})
+target_link_libraries(semantic_segmentation_train libforest ${OpenCV_LIBS} ${PCL_COMMON_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES})
+
+#test executable.
+add_executable(semantic_segmentation_test ${strands_semantic_segmentation_SEM_TEST_SRCS})
+target_link_libraries(semantic_segmentation_test libforest densecrf ${OpenCV_LIBS} ${PCL_COMMON_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES})
+
+#Feature visualization
+add_executable(visualize ${strands_semantic_segmentation_VISUALIZE_SRCS})
+target_link_libraries(visualize libforest ${OpenCV_LIBS} ${PCL_COMMON_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES})
+
+
 ## Specify libraries to link a library or executable target against
 target_link_libraries(semantic_segmentation_node
   libforest

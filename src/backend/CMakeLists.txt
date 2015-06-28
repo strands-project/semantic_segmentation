@@ -41,25 +41,9 @@ set(UTILS_SRCS  ${PROJECT_SOURCE_DIR}/utils/config.cpp
                 ${PROJECT_SOURCE_DIR}/utils/data_loader.cpp)
 
 
-#train executable.
-add_executable(voxelize voxelize.cpp ${THIRDPARTY_SRCS} ${UTILS_SRCS})
-target_link_libraries(voxelize libforest ${OpenCV_LIBS} ${PCL_COMMON_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES})
-
-#train executable.
-add_executable(semantic_segmentation_train train.cpp ${THIRDPARTY_SRCS} ${UTILS_SRCS})
-target_link_libraries(semantic_segmentation_train libforest ${OpenCV_LIBS} ${PCL_COMMON_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES})
-
-#test executable.
-add_executable(semantic_segmentation_test test.cpp ${THIRDPARTY_SRCS} ${UTILS_SRCS})
-target_link_libraries(semantic_segmentation_test libforest densecrf ${OpenCV_LIBS} ${PCL_COMMON_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES})
-
 #rectification of images executable.
 add_executable(rectify rectify.cpp ${THIRDPARTY_SRCS} ${UTILS_SRCS})
 target_link_libraries(rectify  ${OpenCV_LIBS} ${PCL_COMMON_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES})
-
-#Feature visualization
-add_executable(visualize visualize_features.cpp ${THIRDPARTY_SRCS} ${UTILS_SRCS})
-target_link_libraries(visualize libforest ${OpenCV_LIBS} ${PCL_COMMON_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES})
 
 
 # expose stuff to outside
@@ -70,3 +54,8 @@ set(${PROJECT_NAME}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}
                                  ${PROJECT_SOURCE_DIR}/third-party/libforest/lib/fastlog/include PARENT_SCOPE)
 
 set(${PROJECT_NAME}_SOURCES ${THIRDPARTY_SRCS} ${UTILS_SRCS} PARENT_SCOPE)
+
+set(${PROJECT_NAME}_VISUALIZE_SRCS ${PROJECT_SOURCE_DIR}/visualize_features.cpp ${THIRDPARTY_SRCS} ${UTILS_SRCS} PARENT_SCOPE)
+set(${PROJECT_NAME}_VOXELIZE_SRCS ${PROJECT_SOURCE_DIR}/voxelize.cpp ${THIRDPARTY_SRCS} ${UTILS_SRCS} PARENT_SCOPE)
+set(${PROJECT_NAME}_SEM_TRAIN_SRCS ${PROJECT_SOURCE_DIR}/train.cpp ${THIRDPARTY_SRCS} ${UTILS_SRCS} PARENT_SCOPE)
+set(${PROJECT_NAME}_SEM_TEST_SRCS ${PROJECT_SOURCE_DIR}/test.cpp ${THIRDPARTY_SRCS} ${UTILS_SRCS} PARENT_SCOPE)
