@@ -127,6 +127,10 @@ add_dependencies(dummy_client semantic_segmentation_generate_messages_cpp semant
 
 
 #Moved from the backend cmakelist to make them callable from rosrun.
+find_package(OpenMP)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+add_definitions(-DLIBF_ENABLE_OPENMP)
 #train executable.
 add_executable(voxelize ${strands_semantic_segmentation_VOXELIZE_SRCS})
 target_link_libraries(voxelize libforest ${OpenCV_LIBS} ${PCL_COMMON_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES})

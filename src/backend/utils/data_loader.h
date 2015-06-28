@@ -76,7 +76,7 @@ public:
       cv::Mat label = loadLabel(n);
       Utils::Calibration calibration = loadCalibration(n);
       cv::Mat voxel;
-      if(voxels_from_image){
+      if(use_vccs_rectification && voxels_from_image){
         voxel = loadVoxel(n);
       }
 
@@ -92,7 +92,7 @@ public:
 
       //Voxelize
       std::map<int, std::shared_ptr<Voxel> > current_voxels;
-      if(use_vccs_rectification){ // we'll just recompute
+      if(!use_vccs_rectification){ // we'll just recompute
         extractVoxels(cloud, current_voxels);
       }else if(voxels_from_image){
         extractVoxelsFromImage(voxel,cloud, current_voxels);
