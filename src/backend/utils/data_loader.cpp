@@ -126,7 +126,12 @@ void DataLoader::create_cloud(cv::Mat& depth, cv::Mat& color, Utils::Calibration
 
 
 cv::Mat DataLoader::loadVoxel(std::string image_name) const{
-  return Utils::bgrToSegmentId(cv::imread(_voxel_dir + image_name + _voxel_ext));
+  cv::Mat im = cv::imread(_voxel_dir + image_name + _voxel_ext);
+  if(im.rows != 0 && im.cols != 0){
+    return Utils::bgrToSegmentId(im);
+  }else{
+    throw std::runtime_error(std::string("Voxel image could not be loaded from ") + _voxel_dir + image_name + _voxel_ext);
+  }
 }
 
 
