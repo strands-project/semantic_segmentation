@@ -16,3 +16,4 @@ A dummy client to test it:
 * Fix flipping of normals, can we get the meta room center?
 * Pull back other data again?
 * Improve the speed if possible? Also is this needed?
+* Fix up label set.

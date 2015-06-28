@@ -32,6 +32,10 @@ int main(int argc, char **argv){
       ROS_INFO("Sent cloud!");
 
       //TODO debug semantic output here!
+      uint C = srv_sem_seg.response.index_to_label_name.size();
+      for(uint c = 0; c < C; ++c){
+        ROS_INFO("%s : %f", srv_sem_seg.response.index_to_label_name[c].c_str(), srv_sem_seg.response.label_frequencies[c]);
+      }
 
     }else{
       ROS_ERROR("Failed to call service to send the waypoint pointcloud");
