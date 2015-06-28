@@ -3,7 +3,10 @@
 #include "utils/config.h"
 #include "voxel.h"
 
-// libforest
+// dense crf includes
+#include "densecrf.h"
+
+// libforest includes
 #include "libforest/libforest.h"
 
 // PCL includes
@@ -85,32 +88,51 @@ std::cerr << "Done" << std::endl;
     }
     ROS_INFO("Remaining valid points: %i", N);
 
+    uint point_index = 0; //We can't use the point indices as these now have changed due to a set of missing ones.
+    DenseCRF crf(N, _C);
+    Eigen::MatrixXf unary(_C, N);
+    Eigen::MatrixXf feature(6, N);
+    Eigen::MatrixXf feature2(3, N);
+    std::vector<float> probs;
+    for(auto v : voxels){
+      const libf::DataPoint& feat = v.second->getFeatures();
+      _forest->classLogPosterior(feat, probs);
+      v.second->addDataToCrfMats(unary, feature, feature2, point_index, probs);
+    }
+    crf.setUnaryEnergy( unary );
+    crf.addPairwiseEnergy( feature, new PottsCompatibility( 10 ) );
+    crf.addPairwiseEnergy( feature2, new PottsCompatibility( 3 ) );
+    Eigen::MatrixXf map = crf.inference(1);
+
 
     std::vector<float> result_prob(N*_C, 0);
     std::vector<int> result_labels(N, 0);
     std::vector<float> label_frequencies(_C, 0);
     //For each voxel, apply the RF
-    std::vector<float> probs;
-    uint point_index = 0; //We can't use the point indices as these now have changed due to a set of missing ones.
+    //std::vector<float> probs;
+    point_index =0;
     for(auto v : voxels){
-      const libf::DataPoint& feat = v.second->getFeatures();
-      _forest->classLogPosterior(feat, probs);
-      std::vector<float>::iterator max_result_pos = std::max_element(probs.begin(), probs.end());
-      int max_label = std::distance(probs.begin(), max_result_pos);
-      uchar r,g,b;
-      _label_converter.labelToRgb(max_label, r,g,b);
       const std::vector<int>& indices = v.second->getIndices();
       for(int i : indices){
-
+        int max_label = 0;
+        float max_prob = map(0,point_index);
+        for(int c = 1; c < _C; ++c){
+          if(map(c,point_index)  > max_prob){
+            max_prob = map(c,point_index);
+            max_label = c;
+          }
+        }
+        uchar r,g,b;
+        _label_converter.labelToRgb(max_label, r,g,b);
         cloud->points[i].r = r;
         cloud->points[i].g = g;
         cloud->points[i].b = b;
 
         result_labels[point_index] = max_label;
         int prob_idx = _C*point_index;
-        for(int j = 0; j < _C; j++){
-          result_prob[prob_idx++] = probs[j];
-          label_frequencies[j] += probs[j];
+        for(int c = 0; c < _C; c++){
+          result_prob[prob_idx++] = map(c,point_index);
+          label_frequencies[c] += map(c,point_index);
         }
         point_index++;
       }

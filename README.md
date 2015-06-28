@@ -11,7 +11,7 @@ A dummy client to test it:
 * Flip and rotate the data a little for better robustness to turning of robot.
 * Merge the two cmakelists files! SERIOUSLY!
 * Think about a cleaner config file handling
-* DCRF
+* DCRF parameters -> config file.
 * Voxel sizes.
 * Fix flipping of normals, can we get the meta room center?
 * Pull back other data again?

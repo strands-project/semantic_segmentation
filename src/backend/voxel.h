@@ -97,7 +97,7 @@ public:
   void addDataToCrfMats(Eigen::MatrixXf& unary,
                         Eigen::MatrixXf& pairwise1,
                         Eigen::MatrixXf& pairwise2,
-                        int& index,
+                        uint& index,
                         std::vector<float>& probability) const{
     const int dim = probability.size();
     std::vector<float> negative_log;

@@ -128,6 +128,7 @@ add_dependencies(dummy_client semantic_segmentation_generate_messages_cpp semant
 ## Specify libraries to link a library or executable target against
 target_link_libraries(semantic_segmentation_node
   libforest
+  densecrf
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
 )

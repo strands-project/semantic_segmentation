@@ -100,7 +100,7 @@ int main (int argc, char ** argv) {
 
     cv::Mat result_image(color.rows, color.cols, CV_32SC1, cv::Scalar(-1));
     std::vector<float> probs;
-    int index = 0;
+    uint index = 0;
     for(auto v : voxels){
       const libf::DataPoint& feat = v.second->getFeatures();
       forest->classLogPosterior(feat, probs);
