@@ -92,7 +92,9 @@ public:
 
       //Voxelize
       std::map<int, std::shared_ptr<Voxel> > current_voxels;
-      if(voxels_from_image){
+      if(use_vccs_rectification){ // we'll just recompute
+        extractVoxels(cloud, current_voxels);
+      }else if(voxels_from_image){
         extractVoxelsFromImage(voxel,cloud, current_voxels);
       }else{
         extractVoxels(cloud, cloud_unrectified, current_voxels);

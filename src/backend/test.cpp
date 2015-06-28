@@ -82,8 +82,11 @@ int main (int argc, char ** argv) {
 
     //voxelize
     std::map<int, std::shared_ptr<Voxel> > voxels;
-    dl.extractVoxels(cloud, cloud_unrectified, voxels);
-
+    if(conf.get<bool>("vccs_rectification")){
+      dl.extractVoxels(cloud, cloud_unrectified, voxels);
+    }else{
+      dl.extractVoxels(cloud, voxels);
+    }
     //Testing
     int valid_points = 0;
     for(auto v : voxels){
