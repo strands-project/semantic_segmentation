@@ -29,7 +29,7 @@ namespace libf {
           }
 
           for(int cls = 0; cls < C; ++cls){
-            dist[cls] =  sqrt(float(storage->getSize())/dist[cls]); // sqrt because random :D 
+            dist[cls] =  float(storage->getSize())/dist[cls];
           }
 
             // Reset all histograms

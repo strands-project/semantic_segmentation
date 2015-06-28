@@ -21,14 +21,15 @@ public:
 
 
   void extractVoxelsFromImage(cv::Mat& voxel_image,
-                              pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
+                              pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud,
                               std::map<int, std::shared_ptr<Voxel> >& voxel_storage);
 
-  void extractVoxels(pcl::PointCloud< pcl::PointXYZRGB >::Ptr cloud,
-                     std::map< int, std::shared_ptr< Voxel> >& voxel_storage);
+  void extractVoxels(pcl::PointCloud< pcl::PointXYZRGBA>::Ptr cloud,
+                     std::map< int, std::shared_ptr< Voxel> >& voxel_storage,
+                     pcl::PointCloud< pcl::PointXYZRGBA>::Ptr& voxelized_cloud);
 
-  void extractVoxels(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
-                     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_unrectifed,
+  void extractVoxels(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud,
+                     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_unrectifed,
                      std::map<int, std::shared_ptr<Voxel> >& voxel_storage);
 
   cv::Mat loadColor(std::string image_name) const;
@@ -44,13 +45,13 @@ public:
   void create_cloud(cv::Mat& depth,
                     cv::Mat& color,
                     Utils::Calibration& calibration,
-                    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud,
-                    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud_unrectified);
+                    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr& cloud,
+                    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr& cloud_unrectified);
 
 
   void create_cloud(std::string image_name,
-                    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud,
-                    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud_unrectified);
+                    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr& cloud,
+                    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr& cloud_unrectified);
 
   std::vector<std::string> getImageList(std::string key);
 
@@ -81,19 +82,20 @@ public:
       }
 
       //Create the cloud
-      pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;
-      pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_unrectified;
+      pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud;
+      pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_unrectified;
       create_cloud(depth, color, calibration, cloud, cloud_unrectified);
 
-      //       pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb_render(cloud);
-      //       viewer->addPointCloud<pcl::PointXYZRGB> (cloud, rgb_render, n);
+      //       pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGBA> rgb_render(cloud);
+      //       viewer->addPointCloud<pcl::PointXYZRGBA> (cloud, rgb_render, n);
       //       viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, n);
       //       viewer->spin();
 
       //Voxelize
       std::map<int, std::shared_ptr<Voxel> > current_voxels;
       if(!use_vccs_rectification){ // we'll just recompute
-        extractVoxels(cloud, current_voxels);
+        pcl::PointCloud<pcl::PointXYZRGBA>::Ptr voxelized_cloud;
+        extractVoxels(cloud, current_voxels, voxelized_cloud);
       }else if(voxels_from_image){
         extractVoxelsFromImage(voxel,cloud, current_voxels);
       }else{

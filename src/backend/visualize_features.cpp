@@ -74,8 +74,8 @@ int main (int argc, char ** argv) {
     cv::Mat depth = dl.loadDepth(image_name);
     cv::Mat label = dl.loadLabel(image_name);
     Utils::Calibration calib = dl.loadCalibration(image_name);
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_unrectified;
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud;
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_unrectified;
     dl.create_cloud(depth, color, calib, cloud, cloud_unrectified);
 
     //Get the voxels, we don't use the stored ones to easily visualize the change of parameters.

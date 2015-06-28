@@ -76,8 +76,8 @@ int main (int argc, char ** argv) {
     cv::Mat depth = dl.loadDepth(image_names[i]);
     Utils::Calibration calibration = dl.loadCalibration(image_names[i]);
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_unrectified;
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud;
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_unrectified;
     dl.create_cloud(depth, color, calibration, cloud, cloud_unrectified);
 
     //voxelize
@@ -85,7 +85,8 @@ int main (int argc, char ** argv) {
     if(conf.get<bool>("vccs_rectification")){
       dl.extractVoxels(cloud, cloud_unrectified, voxels);
     }else{
-      dl.extractVoxels(cloud, voxels);
+      pcl::PointCloud<pcl::PointXYZRGBA>::Ptr voxelized_cloud;
+      dl.extractVoxels(cloud, voxels, voxelized_cloud);
     }
     //Testing
     int valid_points = 0;
@@ -126,7 +127,7 @@ int main (int argc, char ** argv) {
 //     Utils::ShowCvMat(label_converter.labelToRgb(labels[i]), "gt");
     cv::imwrite(dl.getResultName(image_names[i]), label_converter.labelToRgb(result_image));
     cv::imwrite(dl.getResultName(image_names[i]+ "crf"), label_converter.labelToRgb(result_image_crf));
-//     pcl::io::savePCDFileBinary<pcl::PointXYZRGB>("/data/work/test" + image_names[i] + ".pcd", *clouds[i]);
+//     pcl::io::savePCDFileBinary<pcl::PointXYZRGBA>("/data/work/test" + image_names[i] + ".pcd", *clouds[i]);
   }
 
   return 0;

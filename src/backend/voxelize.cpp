@@ -72,8 +72,8 @@ int main (int argc, char ** argv) {
     for(std::string file : image_list){
 
       //load the image data
-      pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;
-      pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_unrectified;
+      pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud;
+      pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_unrectified;
       dl.create_cloud(file, cloud, cloud_unrectified);
 
       //voxelize

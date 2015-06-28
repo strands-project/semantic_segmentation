@@ -286,8 +286,8 @@
     ],
 
     // VCCS parameters
-    "voxel_resolution" : 0.05,
-    "seed_resolution" : 0.2,
+    "voxel_resolution" : 0.03,
+    "seed_resolution" : 0.20,
     "color_importance" : 1.0,
     "spatial_importance" : 0.5,
     "normal_importance" : 1.0,
@@ -296,7 +296,7 @@
     "min_point_count" : 10,
 
     "model_path" : "rf.dat",
-    "min_split_samples" : 20,
+    "min_split_samples" : 30,
     "max_depth" : 30,
     "number_trees" : 64
 }

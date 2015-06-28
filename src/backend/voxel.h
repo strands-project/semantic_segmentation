@@ -19,7 +19,7 @@
 
 class Voxel{
 public:
-  Voxel(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_ptr, int voxel_id):
+  Voxel(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_ptr, int voxel_id):
       _cloud_ptr(cloud_ptr),
       _voxel_id(voxel_id),
       _label(-5),
@@ -32,11 +32,21 @@ public:
     _point_indices.push_back(idx);
   }
 
+  void addImagePoint(int idx){
+    _image_point_indices.push_back(idx);
+  }
+
   void computeLabel(cv::Mat label_image){
+    std::vector<int> indices;
+    if(_image_point_indices.size() != 0){
+      indices = _image_point_indices;
+    }else{
+      indices = _point_indices;
+    }
     std::map<int, int> label_count;
     int* l_ptr = label_image.ptr<int>(0);
-    for(int indices : _point_indices){
-      label_count[l_ptr[indices]]++;
+    for(int index : indices){
+      label_count[l_ptr[index]]++;
     }
 
     int top_count = -100;
@@ -62,8 +72,14 @@ public:
 
   template<class T>
   void drawValueIntoImage(cv::Mat image, T value) const{
+    std::vector<int> indices;
+    if(_image_point_indices.size() != 0){
+      indices = _image_point_indices;
+    }else{
+      indices = _point_indices;
+    }
     T* i_ptr = image.ptr<T>(0);
-    for(int p :_point_indices){
+    for(int p : indices){
       i_ptr[p] = value;
     }
   }
@@ -78,6 +94,13 @@ public:
 
 
   void drawProbIntoUnary(cv::Mat unary, const std::vector<float>& probability) const{
+    std::vector<int> indices;
+    if(_image_point_indices.size() != 0){
+      indices = _image_point_indices;
+    }else{
+      indices = _point_indices;
+    }
+
     const int dim = probability.size();
     std::vector<float> negative_log;
     negative_log.reserve(dim);
@@ -86,7 +109,7 @@ public:
     }
 
     float* ptr = unary.ptr<float>(0);
-    for(int p :_point_indices){
+    for(int p :indices){
       float* p_ptr = ptr + p*dim;
       for(float f : negative_log){
         *p_ptr++ = f;
@@ -304,11 +327,12 @@ public:
   }
 
 private:
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr _cloud_ptr;
+  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr _cloud_ptr;
   int _voxel_id;
   signed char  _label;
   bool _has_features;
 
+  std::vector<int> _image_point_indices;
   std::vector<int> _point_indices;
   std::vector<float> _class_distrubition;
   libf::DataPoint _features;

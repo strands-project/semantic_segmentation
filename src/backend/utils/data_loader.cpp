@@ -54,7 +54,7 @@ std::vector< std::string> DataLoader::getImageList(std::string key) {
 }
 
 
-void DataLoader::create_cloud(std::string image_name, pcl::PointCloud< pcl::PointXYZRGB >::Ptr& cloud, pcl::PointCloud< pcl::PointXYZRGB >::Ptr& cloud_unrectified) {
+void DataLoader::create_cloud(std::string image_name, pcl::PointCloud<pcl::PointXYZRGBA>::Ptr& cloud, pcl::PointCloud< pcl::PointXYZRGBA>::Ptr& cloud_unrectified) {
   cv::Mat depth = loadDepth(image_name);
   cv::Mat color = loadColor(image_name);
   Utils::Calibration calibration = loadCalibration(image_name);
@@ -62,9 +62,9 @@ void DataLoader::create_cloud(std::string image_name, pcl::PointCloud< pcl::Poin
 }
 
 
-void DataLoader::create_cloud(cv::Mat& depth, cv::Mat& color, Utils::Calibration& calibration, pcl::PointCloud< pcl::PointXYZRGB >::Ptr& cloud, pcl::PointCloud< pcl::PointXYZRGB >::Ptr& cloud_unrectified) {
-  cloud = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(new pcl::PointCloud<pcl::PointXYZRGB>());
-  cloud_unrectified = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(new pcl::PointCloud<pcl::PointXYZRGB>());
+void DataLoader::create_cloud(cv::Mat& depth, cv::Mat& color, Utils::Calibration& calibration, pcl::PointCloud< pcl::PointXYZRGBA>::Ptr& cloud, pcl::PointCloud< pcl::PointXYZRGBA>::Ptr& cloud_unrectified) {
+  cloud = pcl::PointCloud<pcl::PointXYZRGBA>::Ptr(new pcl::PointCloud<pcl::PointXYZRGBA>());
+  cloud_unrectified = pcl::PointCloud<pcl::PointXYZRGBA>::Ptr(new pcl::PointCloud<pcl::PointXYZRGBA>());
   ushort* d_ptr = depth.ptr<ushort>(0);
   cloud->height = depth.rows;
   cloud->width = depth.cols;
@@ -157,13 +157,13 @@ cv::Mat DataLoader::loadColor(std::string image_name) const{
 }
 
 
-void DataLoader::extractVoxels(pcl::PointCloud< pcl::PointXYZRGB >::Ptr cloud, pcl::PointCloud< pcl::PointXYZRGB >::Ptr cloud_unrectifed, std::map< int, std::shared_ptr< Voxel> >& voxel_storage) {
-  pcl::SupervoxelClustering<pcl::PointXYZRGB> super (_voxel_resolution, _seed_resolution, true);
+void DataLoader::extractVoxels(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud, pcl::PointCloud< pcl::PointXYZRGBA>::Ptr cloud_unrectifed, std::map< int, std::shared_ptr< Voxel> >& voxel_storage) {
+  pcl::SupervoxelClustering<pcl::PointXYZRGBA> super (_voxel_resolution, _seed_resolution, true);
   super.setInputCloud(cloud_unrectifed);
   super.setColorImportance(_color_importance);
   super.setSpatialImportance(_spatial_importance);
   super.setNormalImportance(_normal_importance);
-  std::map <uint32_t, pcl::Supervoxel<pcl::PointXYZRGB>::Ptr > supervoxel_clusters;
+  std::map <uint32_t, pcl::Supervoxel<pcl::PointXYZRGBA>::Ptr > supervoxel_clusters;
   super.extract(supervoxel_clusters);
 
   //Doesn't seem to yield anything better really.
@@ -182,32 +182,45 @@ void DataLoader::extractVoxels(pcl::PointCloud< pcl::PointXYZRGB >::Ptr cloud, p
   }
 }
 
-void DataLoader::extractVoxels(pcl::PointCloud< pcl::PointXYZRGB >::Ptr cloud, std::map< int, std::shared_ptr< Voxel> >& voxel_storage) {
-  pcl::SupervoxelClustering<pcl::PointXYZRGB> super (_voxel_resolution, _seed_resolution, false);
+void DataLoader::extractVoxels(pcl::PointCloud< pcl::PointXYZRGBA>::Ptr cloud, std::map< int, std::shared_ptr< Voxel> >& voxel_storage,
+                               pcl::PointCloud< pcl::PointXYZRGBA>::Ptr& voxelized_cloud) {
+  pcl::SupervoxelClustering<pcl::PointXYZRGBA> super (_voxel_resolution, _seed_resolution, false);
   super.setInputCloud(cloud);
   super.setColorImportance(_color_importance);
   super.setSpatialImportance(_spatial_importance);
   super.setNormalImportance(_normal_importance);
-  std::map <uint32_t, pcl::Supervoxel<pcl::PointXYZRGB>::Ptr > supervoxel_clusters;
+  std::map <uint32_t, pcl::Supervoxel<pcl::PointXYZRGBA>::Ptr > supervoxel_clusters;
   super.extract(supervoxel_clusters);
 
   //Doesn't seem to yield anything better really.
   //std::map <uint32_t, pcl::Supervoxel<pcl::PointXYZRGBA>::Ptr > refined_supervoxel_clusters;
   //super.refineSupervoxels(3, refined_supervoxel_clusters);
 
-  pcl::PointCloud<pcl::PointXYZL>::Ptr full_labeled_cloud = super.getLabeledCloud();
-  for(unsigned int j = 0; j < full_labeled_cloud->size(); ++j) {
-    int label =  full_labeled_cloud->points[j].label;
+  voxelized_cloud = super.getColoredVoxelCloud();
+  pcl::PointCloud<pcl::PointXYZL>::Ptr labeled_voxel_cloud = super.getLabeledVoxelCloud();
+  for(unsigned int j = 0; j < labeled_voxel_cloud->size(); ++j) {
+    int label =  labeled_voxel_cloud->points[j].label;
     if(label > 0){ // this is the voxel containing all remaining points, we don't care about it.
       if(voxel_storage.count(label) == 0) {
-        voxel_storage[label] = std::shared_ptr<Voxel>( new Voxel(cloud, label));
+        voxel_storage[label] = std::shared_ptr<Voxel>( new Voxel(voxelized_cloud, label));
       }
       voxel_storage[label]->addPoint(j);
     }
   }
+  //Also collect the image based indices.
+  pcl::PointCloud<pcl::PointXYZL>::Ptr full_labeled_cloud = super.getLabeledCloud();
+  for(unsigned int j = 0; j < full_labeled_cloud->size(); ++j) {
+    int label =  full_labeled_cloud->points[j].label;
+    if(label > 0){ // this is the voxel containing all remaining points, we don't care about it.
+      if(voxel_storage.count(label) != 0) {
+        voxel_storage[label]->addImagePoint(j);
+      }
+    }
+  }
+
 }
 
-void DataLoader::extractVoxelsFromImage(cv::Mat& voxel_image, pcl::PointCloud< pcl::PointXYZRGB >::Ptr cloud, std::map< int, std::shared_ptr< Voxel > >& voxel_storage) {
+void DataLoader::extractVoxelsFromImage(cv::Mat& voxel_image, pcl::PointCloud< pcl::PointXYZRGBA>::Ptr cloud, std::map< int, std::shared_ptr< Voxel > >& voxel_storage) {
   int* v_ptr = voxel_image.ptr<int>(0);
   for(int j = 0; j < voxel_image.rows*voxel_image.cols; ++j) {
     int v_label = v_ptr[j];

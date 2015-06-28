@@ -59,7 +59,7 @@ std::cerr << "Done" << std::endl;
     //Get the cloud and convert it to a pcl format
     pcl::PCLPointCloud2 pcl_pc2;
     pcl_conversions::toPCL(req.integrated_cloud,pcl_pc2);
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGBA>);
     pcl::fromPCLPointCloud2(pcl_pc2, *cloud);
     ROS_INFO("Cloud received, a total of %lu points found", cloud->size());
 
@@ -67,8 +67,9 @@ std::cerr << "Done" << std::endl;
     cloud->sensor_origin_ = Eigen::Vector4f(0.0, 0.0, _robot_height, 1.0);
 
     //Push it through the voxelization
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr voxelized_cloud;
     std::map<int, std::shared_ptr<Voxel> > voxels;
-    _dl.extractVoxels(cloud, voxels);
+    _dl.extractVoxels(cloud, voxels, voxelized_cloud);
     ROS_INFO("Voxelized the cloud, got %lu supervoxels.", voxels.size());
 
 
@@ -124,9 +125,9 @@ std::cerr << "Done" << std::endl;
         }
         uchar r,g,b;
         _label_converter.labelToRgb(max_label, r,g,b);
-        cloud->points[i].r = r;
-        cloud->points[i].g = g;
-        cloud->points[i].b = b;
+        voxelized_cloud->points[i].r = r;
+        voxelized_cloud->points[i].g = g;
+        voxelized_cloud->points[i].b = b;
 
         result_labels[point_index] = max_label;
         int prob_idx = _C*point_index;
@@ -157,9 +158,9 @@ std::cerr << "Done" << std::endl;
     for(auto v : voxels){
       const std::vector<int>& indices = v.second->getIndices();
       for(int i : indices){
-        res.points[point_index].x = cloud->points[i].x;
-        res.points[point_index].y = cloud->points[i].y;
-        res.points[point_index].z = cloud->points[i].z;
+        res.points[point_index].x = voxelized_cloud->points[i].x;
+        res.points[point_index].y = voxelized_cloud->points[i].y;
+        res.points[point_index].z = voxelized_cloud->points[i].z;
         point_index++;
       }
     }

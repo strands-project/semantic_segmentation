@@ -46,8 +46,8 @@ void rectify_images(Utils::Config& conf){
   cv::Mat depths;
   cv::Mat labels;
   Utils::Calibration calibrations;
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr floor;
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr clouds_unrectified;
+  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr floor;
+  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr clouds_unrectified;
 
   image_names = conf.get<std::vector<std::string> >("train_images");
   std::string color_dir = conf.getPath("color_dir");
@@ -65,13 +65,13 @@ void rectify_images(Utils::Config& conf){
     cv::cvtColor(cv::imread(color_dir + im_name + color_ext), colors, CV_BGR2Lab);
     labels = label_converter.rgbToLabel(cv::imread(label_dir + im_name + label_ext));
     calibrations = Utils::Calibration(calibration_dir + im_name + calibration_ext);
-    floor = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(new pcl::PointCloud<pcl::PointXYZRGB>());
-    clouds_unrectified = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(new pcl::PointCloud<pcl::PointXYZRGB>());
+    floor = pcl::PointCloud<pcl::PointXYZRGBA>::Ptr(new pcl::PointCloud<pcl::PointXYZRGBA>());
+    clouds_unrectified = pcl::PointCloud<pcl::PointXYZRGBA>::Ptr(new pcl::PointCloud<pcl::PointXYZRGBA>());
 
 
     //Convert to point clouds
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cld = floor;
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cld_unr = clouds_unrectified;
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cld = floor;
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cld_unr = clouds_unrectified;
     ushort* d_ptr = depths.ptr<ushort>(0);
     cld_unr->height = depths.rows;
     cld_unr->width = depths.cols;
@@ -115,7 +115,7 @@ void rectify_images(Utils::Config& conf){
     }
 
 
-    pcl::SACSegmentation<pcl::PointXYZRGB> seg;
+    pcl::SACSegmentation<pcl::PointXYZRGBA> seg;
     seg.setOptimizeCoefficients (true);
     seg.setModelType (pcl::SACMODEL_PERPENDICULAR_PLANE);
     seg.setMethodType (pcl::SAC_RANSAC);
