@@ -85,7 +85,7 @@ DecisionTree::ptr DecisionTreeLearner::learn(AbstractDataStorage::ptr dataStorag
     }
 
     for(int cls = 0; cls < C; ++cls){
-      dist[cls] =  1.0; //float(dataStorage->getSize())/dist[cls];
+      dist[cls] =  float(dataStorage->getSize())/dist[cls];
     }
 
 
