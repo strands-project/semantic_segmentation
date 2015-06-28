@@ -33,7 +33,8 @@ public:
     _dl(Utils::DataLoader(_conf, false)),
     _label_converter(_dl.getLabelConverter()),
     _C(_label_converter.getValidLabelCount()),
-    _robot_height(robot_height){
+    _robot_height(robot_height),
+    _minimum_points(_conf.get<int>("min_point_count")){
     _forest = new libf::RandomForest<libf::DecisionTree>();
     std::filebuf fb;
     if (fb.open (forest_file,std::ios::in)){
@@ -68,22 +69,21 @@ std::cerr << "Done" << std::endl;
     ROS_INFO("Voxelized the cloud, got %lu supervoxels.", voxels.size());
 
 
+    // Decide which voxels to label and which to discard directly!
     int N = 0;
-    for(auto v : voxels){
-      N += v.second->getSize();
+    for(auto v_it = voxels.begin(); v_it != voxels.end(); ){
+      int n = v_it->second->getSize();
+      // only look at large enough voxels.
+      if(n >= _minimum_points){
+        N += n;
+        v_it->second->computeFeatures();
+        ++v_it;
+      }else{
+        // Otherwise remove them completely!
+        voxels.erase(v_it++);
+      }
     }
     ROS_INFO("Remaining valid points: %i", N);
-
-
-
-
-    for(uint i = 0; i < cloud->size(); i++){
-      cloud->points[i].r = 0;
-      cloud->points[i].g = 0;
-      cloud->points[i].b = 0;
-    }
-
-
 
 
     std::vector<float> result_prob(N*_C, 0);
@@ -91,7 +91,7 @@ std::cerr << "Done" << std::endl;
     std::vector<float> label_frequencies(_C, 0);
     //For each voxel, apply the RF
     std::vector<float> probs;
-    int point_index = 0; //We can't use the point indices as these now have changed due to a small set of missing ones.
+    uint point_index = 0; //We can't use the point indices as these now have changed due to a set of missing ones.
     for(auto v : voxels){
       const libf::DataPoint& feat = v.second->getFeatures();
       _forest->classLogPosterior(feat, probs);
@@ -130,10 +130,16 @@ std::cerr << "Done" << std::endl;
     res.label_probabilities = result_prob;
     res.label_frequencies = label_frequencies;
     res.points.resize(N);
-    for(int i = 0; i < N; i++){
-      res.points[i].x = cloud->points[i].x;
-      res.points[i].y = cloud->points[i].y;
-      res.points[i].z = cloud->points[i].z;
+
+    point_index = 0;
+    for(auto v : voxels){
+      const std::vector<int>& indices = v.second->getIndices();
+      for(int i : indices){
+        res.points[point_index].x = cloud->points[i].x;
+        res.points[point_index].y = cloud->points[i].y;
+        res.points[point_index].z = cloud->points[i].z;
+        point_index++;
+      }
     }
 
 
@@ -148,6 +154,7 @@ private:
     libf::RandomForest<libf::DecisionTree>* _forest;
     int _C;
     float _robot_height;
+    int _minimum_points;
 };
 
 int main(int argc, char **argv){
