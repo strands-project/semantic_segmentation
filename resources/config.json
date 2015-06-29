@@ -297,12 +297,12 @@
     "seed_jitter" : [-0.05, -0.025, 0.00, 0.025, 0.05],
 
     // Dense CRF parameters
-    "crf_iterations" : 1,
+    "crf_iterations" : 2,
     "appearance_color_sigma" :  30.0,
     "appearance_range_sigma" :  0.6,
     "appearance_weight" :       10.0,
     "smoothnes_range_sigma" :   0.15,
-    "smoothnes_weight" :        1.0,
+    "smoothnes_weight" :        5.0,
 
     // RF parameters
     "model_path" :          "rf.dat",

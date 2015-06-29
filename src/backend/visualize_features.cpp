@@ -65,8 +65,6 @@ int main (int argc, char ** argv) {
 
   std::vector<std::string> image_names = dl.getImageList(conf.get<std::string>("key","test_images"));
 
-  int n = Voxel::getFeatureSize();
-
   //For each image
   for(std::string image_name : image_names){
     //Load the image
@@ -81,6 +79,8 @@ int main (int argc, char ** argv) {
     //Get the voxels, we don't use the stored ones to easily visualize the change of parameters.
     std::map<int, std::shared_ptr<Voxel> > voxels;
     dl.extractVoxels(cloud, cloud_unrectified, voxels);
+
+    int n = voxels[1]->getFeatures().rows(); //Just to get the size once.
 
     cv::Mat result_image(cloud->height, cloud->width, CV_32FC1, cv::Scalar(0));
     for(int j = 0; j < n; j++){
