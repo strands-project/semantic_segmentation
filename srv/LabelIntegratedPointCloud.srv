@@ -1,4 +1,4 @@
-sensor_msgs/PointCloud2   integrated_cloud
+string                    waypoint_id
 ---
 string[]                  index_to_label_name
 int32[]                   label

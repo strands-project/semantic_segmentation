@@ -2,7 +2,6 @@
 
   <arg name="config_file" default="$(find semantic_segmentation)/resources/config.json" />
   <arg name="forest_file" default="$(find semantic_segmentation)/resources/rf.dat" />
-  <arg name="robot_height" default="1.7" />
 
   <arg name="machine" default="localhost" />
   <arg name="user" default="" />
@@ -11,6 +10,6 @@
   <machine name="$(arg machine)" address="$(arg machine)" env-loader="$(optenv ROS_ENV_LOADER )" user="$(arg user)" default="true" />
 
   <!-- The actual semantic segmentation service node -->
-  <node machine="$(arg machine)" pkg="semantic_segmentation" type="semantic_segmentation_node" name="semantic_segmentation_node" output="screen" args="$(arg config_file) $(arg forest_file) $(arg robot_height)"/>
+  <node machine="$(arg machine)" pkg="semantic_segmentation" type="semantic_segmentation_node" name="semantic_segmentation_node" output="screen" args="$(arg config_file) $(arg forest_file)"/>
 
 </launch>

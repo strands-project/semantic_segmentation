@@ -119,11 +119,10 @@ include_directories(
 add_executable(semantic_segmentation_node src/semantic_segmentation_node.cpp ${strands_semantic_segmentation_SOURCES})
 add_executable(dummy_client src/dummy_client.cpp)
 
-
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(semantic_segmentation_node semantic_segmentation_generate_messages_cpp)
-add_dependencies(dummy_client semantic_segmentation_generate_messages_cpp semantic_map_publisher_generate_messages_cpp)
+add_dependencies(semantic_segmentation_node semantic_segmentation_generate_messages_cpp semantic_map_publisher_generate_messages_cpp)
+add_dependencies(dummy_client semantic_segmentation_generate_messages_cpp)
 
 
 #Moved from the backend cmakelist to make them callable from rosrun.

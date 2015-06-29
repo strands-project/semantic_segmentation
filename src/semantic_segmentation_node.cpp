@@ -27,17 +27,20 @@
 
 //Service includes
 #include "semantic_segmentation/LabelIntegratedPointCloud.h"
+#include "semantic_map_publisher/ObservationService.h"
+#include "semantic_map_publisher/SensorOriginService.h"
 
 
 class Labeler{
 public:
-  Labeler(std::string config_file, std::string forest_file, float robot_height) :
+  Labeler(std::string config_file, std::string forest_file, ros::ServiceClient& cloud_service, ros::ServiceClient& origin_service) :
     _conf(Utils::Config(config_file, std::map<std::string, std::string>())),
     _dl(Utils::DataLoader(_conf, false)),
     _label_converter(_dl.getLabelConverter()),
     _C(_label_converter.getValidLabelCount()),
-    _robot_height(robot_height),
-    _minimum_points(_conf.get<int>("min_point_count")){
+    _minimum_points(_conf.get<int>("min_point_count")),
+    _cloud_service(cloud_service),
+    _origin_service(origin_service){
     _forest = new libf::RandomForest<libf::DecisionTree>();
     std::filebuf fb;
     if (fb.open (forest_file,std::ios::in)){
@@ -56,24 +59,31 @@ public:
   bool label_cloud(semantic_segmentation::LabelIntegratedPointCloud::Request  &req,
                    semantic_segmentation::LabelIntegratedPointCloud::Response &res){
 
-    //Check if this is a valid pointcloud
-    if(req.integrated_cloud.width*req.integrated_cloud.height == 0){
-      ROS_ERROR("Recived and empty cloud!");
-      res.index_to_label_name = _label_converter.getLabelNames();
-      res.label = std::vector<int>(0);
-      res.label_probabilities = std::vector<float>(0);
-      res.label_frequencies = std::vector<float>(0);
-      res.points = std::vector<geometry_msgs::Point32>(0);
-
-      return 0;
-    }
-
-    //Get the cloud and convert it to a pcl format
-    pcl::PCLPointCloud2 pcl_pc2;
-    pcl_conversions::toPCL(req.integrated_cloud,pcl_pc2);
+    //Get the cloud and the origin.
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGBA>);
-    pcl::fromPCLPointCloud2(pcl_pc2, *cloud);
-    ROS_INFO("Cloud received, a total of %lu points found", cloud->size());
+    semantic_map_publisher::ObservationService srv;
+    srv.request.waypoint_id = req.waypoint_id;
+    srv.request.resolution = 0.01;
+    if (_cloud_service.call(srv)){
+      semantic_map_publisher::SensorOriginService origin_srv;
+      origin_srv.request.waypoint_id = req.waypoint_id;
+      if (_origin_service.call(origin_srv)){
+        //Get the cloud and convert it to a pcl format
+        pcl::PCLPointCloud2 pcl_pc2;
+        pcl_conversions::toPCL(srv.response.cloud,pcl_pc2);
+        pcl::fromPCLPointCloud2(pcl_pc2, *cloud);
+
+        //Get the origin
+        cloud->sensor_origin_ = Eigen::Vector4f(origin_srv.response.origin.x, origin_srv.response.origin.y, origin_srv.response.origin.z, 1.0);
+        ROS_INFO("Cloud received, a total of %lu points found", cloud->size());
+      }else{
+        ROS_ERROR("Didn't receive an sensor origin for the cloud!");
+      return false;
+      }
+    }else{
+      ROS_ERROR("Didn't receive a pointcloud");
+      return false;
+    }
 
     //Convert the cloud to lab
     cv::Mat rgb(cloud->size(), 1, CV_8UC3);
@@ -90,9 +100,6 @@ public:
       cloud->points[i].g = *rgb_ptr++;
       cloud->points[i].r = *rgb_ptr++;
     }
-
-    //Set the "camera" origin
-    cloud->sensor_origin_ = Eigen::Vector4f(0.0, 0.0, _robot_height, 1.0);
 
     //Push it through the voxelization
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr voxelized_cloud;
@@ -210,30 +217,38 @@ private:
     Utils::RgbLabelConversion _label_converter;
     libf::RandomForest<libf::DecisionTree>* _forest;
     int _C;
-    float _robot_height;
     int _minimum_points;
+    ros::ServiceClient& _cloud_service;
+    ros::ServiceClient& _origin_service;
 };
 
 int main(int argc, char **argv){
   ros::init(argc, argv, "semantic_segmentation_service");
   
   //Initialize everything needed for labeling
-  if(argc < 3){
-    ROS_ERROR("Usage: %s <config.json> <rf.dat> <robot_height>", argv[0]);
+  if(argc < 2){
+    ROS_ERROR("Usage: %s <config.json> <rf.dat>", argv[0]);
     return 1;
   }
+
+  //get some services.
+  ros::NodeHandle nh("~");
+  ros::ServiceClient client_get_cloud    = nh.serviceClient<semantic_map_publisher::ObservationService>("/semantic_map_publisher/SemanticMapPublisher/ObservationService");
+  ros::ServiceClient client_cloud_origin = nh.serviceClient<semantic_map_publisher::SensorOriginService>("/semantic_map_publisher/SemanticMapPublisher/SensorOriginService");
+
+
   //The robot height is quick and dirty :( This is needed as the integrated clouds lack a sensor origin.
   std::shared_ptr<Labeler> l;
   try{
-    l = std::shared_ptr<Labeler>(new Labeler(argv[1], argv[2], std::stof(argv[3])));
+    l = std::shared_ptr<Labeler>(new Labeler(argv[1], argv[2], client_get_cloud, client_cloud_origin));
   } catch (std::exception& e){
     ROS_ERROR("%s",e.what());
     return 1;
   }
-  
+
   //Advertise the service.
-  ros::NodeHandle nh("~");
   ros::ServiceServer label_service = nh.advertiseService("label_integrated_cloud", &Labeler::label_cloud, l.get());
+
   ROS_INFO("Semantic segmentation service ready.");
   ros::spin();
 

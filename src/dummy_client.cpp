@@ -7,42 +7,27 @@
 
 //Service includes
 #include "semantic_segmentation/LabelIntegratedPointCloud.h"
-#include "semantic_map_publisher/ObservationService.h"
 
 
 int main(int argc, char **argv){
-  ros::init(argc, argv, "semantic_segmentation_cloud_fetcher");
+  ros::init(argc, argv, "semantic_segmentation_dummy_client");
   std::string waypoint = "WayPoint1";
   if(argc > 1){
     waypoint = std::string(argv[1]);
   }
   ros::NodeHandle nh("~");
-  ros::ServiceClient client_get_cloud = nh.serviceClient<semantic_map_publisher::ObservationService>("/semantic_map_publisher/SemanticMapPublisher/ObservationService");
-  ros::ServiceClient client_push_cloud = nh.serviceClient<semantic_segmentation::LabelIntegratedPointCloud>("/semantic_segmentation_node/label_integrated_cloud");
+  ros::ServiceClient client = nh.serviceClient<semantic_segmentation::LabelIntegratedPointCloud>("/semantic_segmentation_node/label_integrated_cloud");
 
-  semantic_map_publisher::ObservationService srv;
+  semantic_segmentation::LabelIntegratedPointCloud srv;
   srv.request.waypoint_id = waypoint;
-  srv.request.resolution = 0.01; //is this 1 cm?
-  if (client_get_cloud.call(srv)){
-    ROS_INFO("Received cloud!");
-    sensor_msgs::PointCloud2 integrated_cloud = srv.response.cloud;
-    semantic_segmentation::LabelIntegratedPointCloud srv_sem_seg;
-    srv_sem_seg.request.integrated_cloud = integrated_cloud;
-    if (client_push_cloud.call(srv_sem_seg)){
-      ROS_INFO("Sent cloud!");
-
-      //TODO debug semantic output here!
-      uint C = srv_sem_seg.response.index_to_label_name.size();
-      for(uint c = 0; c < C; ++c){
-        ROS_INFO("%s : %f", srv_sem_seg.response.index_to_label_name[c].c_str(), srv_sem_seg.response.label_frequencies[c]);
-      }
-
-    }else{
-      ROS_ERROR("Failed to call service to send the waypoint pointcloud");
-      return 1;
+  if (client.call(srv)){
+    ROS_INFO("Requested labeled cloud for %s", waypoint.c_str());
+    uint C = srv.response.index_to_label_name.size();
+    for(uint c = 0; c < C; ++c){
+      ROS_INFO("%s : %f", srv.response.index_to_label_name[c].c_str(), srv.response.label_frequencies[c]);
     }
   }else{
-    ROS_ERROR("Failed to call service to get the waypoint pointcloud");
+    ROS_ERROR("Failed to call service for the labeled Waypoint");
     return 1;
   }
 
