@@ -9,10 +9,12 @@ A dummy client to test it:
 
 #TODO:
 ASAP:
-* Fix flipping of normals, can we get the meta room center?
-* Play around with jitter and histogram parameters.
+* Update service to take waypoint
+* Query center from Rares
+* Fix flipping of normals
+* Play around with rotations and flipping
 * Try neighborhood features! (Normals, psl, color,)
-* Flip and rotate the data a little for better robustness to turning of robot.
+* Store labeled pointclouds and make a latched topic for publishing them.
 
 POST REV:
 * Merge the two cmakelists files!
