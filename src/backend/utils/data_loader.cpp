@@ -185,7 +185,18 @@ void DataLoader::extractVoxels(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud, pc
 void DataLoader::extractVoxels(pcl::PointCloud< pcl::PointXYZRGBA>::Ptr cloud, std::map< int, std::shared_ptr< Voxel> >& voxel_storage,
                                pcl::PointCloud< pcl::PointXYZRGBA>::Ptr& voxelized_cloud) {
   pcl::SupervoxelClustering<pcl::PointXYZRGBA> super (_voxel_resolution, _seed_resolution, false);
-  super.setInputCloud(cloud);
+
+  //For clustering shift the center to 0,0,0
+  pcl::PointCloud< pcl::PointXYZRGBA>::Ptr cloud_centered(new pcl::PointCloud< pcl::PointXYZRGBA>());
+  *cloud_centered = *cloud;
+  Eigen::Vector4f center = cloud->sensor_origin_;
+  for(uint i = 0; i < cloud_centered->size(); ++i){
+    cloud_centered->points[i].x -= center(0);
+    cloud_centered->points[i].y -= center(1);
+    cloud_centered->points[i].z -= center(2);
+  }
+
+  super.setInputCloud(cloud_centered);
   //TODO center this cloud so that the origin is at zero first. Needed so that the normals are useful and the cloud is merged well.
   super.setColorImportance(_color_importance);
   super.setSpatialImportance(_spatial_importance);
@@ -198,6 +209,13 @@ void DataLoader::extractVoxels(pcl::PointCloud< pcl::PointXYZRGBA>::Ptr cloud, s
   //super.refineSupervoxels(3, refined_supervoxel_clusters);
 
   voxelized_cloud = super.getColoredVoxelCloud();
+  //transform the voxelized_cloud back into the original frame
+  voxelized_cloud->sensor_origin_ = cloud->sensor_origin_;
+  for(uint i = 0; i < voxelized_cloud->size(); ++i){
+    voxelized_cloud->points[i].x += center(0);
+    voxelized_cloud->points[i].y += center(1);
+    voxelized_cloud->points[i].z += center(2);
+  }
   pcl::PointCloud<pcl::PointXYZL>::Ptr labeled_voxel_cloud = super.getLabeledVoxelCloud();
   for(unsigned int j = 0; j < labeled_voxel_cloud->size(); ++j) {
     int label =  labeled_voxel_cloud->points[j].label;
