@@ -178,27 +178,21 @@ public:
       cld = _cloud_ptr;
     }
 
-  void computeFeatures(){
     float x = 0, y = 0, z = 0;
-    float r = 0,g =0 ,b =0, rr =0, gg =0, bb =0;
-    for(int p : _point_indices){
-      x += _cloud_ptr->points[p].x;
-      y += _cloud_ptr->points[p].y;
-      z += _cloud_ptr->points[p].z;
-      r += _cloud_ptr->points[p].r;
-      g += _cloud_ptr->points[p].g;
-      b += _cloud_ptr->points[p].b;
-      rr += _cloud_ptr->points[p].r*_cloud_ptr->points[p].r;
-      gg += _cloud_ptr->points[p].g*_cloud_ptr->points[p].g;
-      bb += _cloud_ptr->points[p].b*_cloud_ptr->points[p].b;
+    std::vector<float> hist(BINS*3,0);
+    for(int p : indices){
+      x += cld->points[p].x;
+      y += cld->points[p].y;
+      z += cld->points[p].z;
+      hist[std::min(cld->points[p].r/BINS, BINS)]++;
+      hist[std::min(cld->points[p].g/BINS + BINS, BINS)]++;
+      hist[std::min(cld->points[p].b/BINS + 2*BINS, BINS)]++;
     }
-    float count_inv = 1.0f/static_cast<float>(_point_indices.size());
-    r *= count_inv;
-    g *= count_inv;
-    b *= count_inv;
-    rr *= count_inv;
-    gg *= count_inv;
-    bb *= count_inv;
+    float count_inv = 1.0f/static_cast<float>(indices.size());
+    for(int i = 0; i < 3*BINS; ++i){
+      hist[i] *= count_inv;
+    }
+
     x *= count_inv;
     y *= count_inv;
     z *= count_inv;
@@ -298,17 +292,13 @@ public:
     bb3 = bbz_max - bbz_min;
 
 
-#define FEATURE_LENGTH 20
 
     _features = libf::DataPoint(FEATURE_LENGTH);
     int f_index = 0;
     _features(f_index++) = z;
-    _features(f_index++) = r;
-    _features(f_index++) = g;
-    _features(f_index++) = b;
-    _features(f_index++) = rr - r*r;
-    _features(f_index++) = gg - g*g ;
-    _features(f_index++) = bb - b*b;
+    for(float h : hist){
+      _features(f_index++) = h;
+    }
     _features(f_index++) = sigma_p;
     _features(f_index++) = sigma_s;
     _features(f_index++) = sigma_l;
@@ -360,6 +350,5 @@ private:
   std::vector<int> _point_indices;
   std::vector<float> _class_distrubition;
   libf::DataPoint _features;
-
   pcl::PointCloud<pcl::PointXYZRGBA>::Ptr _full_cloud_ptr;
 };
