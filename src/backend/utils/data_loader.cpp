@@ -152,7 +152,7 @@ cv::Mat DataLoader::loadDepth(std::string image_name) const{
 
 cv::Mat DataLoader::loadColor(std::string image_name) const{
   cv::Mat color = cv::imread(_color_dir + image_name + _color_ext);
-  //cv::cvtColor(color, color, CV_BGR2Lab);
+  cv::cvtColor(color, color, CV_BGR2Lab);
   return color;
 }
 

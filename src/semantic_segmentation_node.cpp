@@ -63,6 +63,22 @@ std::cerr << "Done" << std::endl;
     pcl::fromPCLPointCloud2(pcl_pc2, *cloud);
     ROS_INFO("Cloud received, a total of %lu points found", cloud->size());
 
+    //Convert the cloud to lab
+    cv::Mat rgb(cloud->size(), 1, CV_8UC3);
+    uchar* rgb_ptr = rgb.ptr<uchar>(0);
+    for(auto p : cloud->points){
+      *rgb_ptr++ = p.b;
+      *rgb_ptr++ = p.g;
+      *rgb_ptr++ = p.r;
+    }
+    cv::cvtColor(rgb, rgb, CV_BGR2Lab);
+    rgb_ptr = rgb.ptr<uchar>(0);
+    for(int i = 0; i <cloud->points.size(); ++i){
+      cloud->points[i].b = *rgb_ptr++;
+      cloud->points[i].g = *rgb_ptr++;
+      cloud->points[i].r = *rgb_ptr++;
+    }
+
     //Set the "camera" origin
     cloud->sensor_origin_ = Eigen::Vector4f(0.0, 0.0, _robot_height, 1.0);
 
