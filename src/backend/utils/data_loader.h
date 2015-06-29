@@ -93,27 +93,33 @@ public:
 
       //Voxelize
       std::map<int, std::shared_ptr<Voxel> > current_voxels;
-      if(!use_vccs_rectification){ // we'll just recompute
-        pcl::PointCloud<pcl::PointXYZRGBA>::Ptr voxelized_cloud;
-        extractVoxels(cloud, current_voxels, voxelized_cloud);
-      }else if(voxels_from_image){
-        extractVoxelsFromImage(voxel,cloud, current_voxels);
-      }else{
-        extractVoxels(cloud, cloud_unrectified, current_voxels);
-      }
+      float original_seed_resolution = _seed_resolution;
+      std::vector<float> jitter = _conf.get<std::vector<float>>("seed_jitter");
+      for(float j : jitter){
+        _seed_resolution = original_seed_resolution + j;
+        if(!use_vccs_rectification){ // we'll just recompute
+          pcl::PointCloud<pcl::PointXYZRGBA>::Ptr voxelized_cloud;
+          extractVoxels(cloud, current_voxels, voxelized_cloud);
+        }else if(voxels_from_image){
+          extractVoxelsFromImage(voxel,cloud, current_voxels);
+        }else{
+          extractVoxels(cloud, cloud_unrectified, current_voxels);
+        }
 
-      //Extract features
-      for(auto v : current_voxels){
-        if (v.second->getSize() >= _minimum_point_count) {
-          v.second->computeLabel(label);
-          int l =  v.second->getLabel();
-          if(l >=0){
-            v.second->computeFeatures();
-            //Store datapoints
-            d->addDataPoint(v.second->getFeatures(), l);
+        //Extract features
+        for(auto v : current_voxels){
+          if (v.second->getSize() >= _minimum_point_count) {
+            v.second->computeLabel(label);
+            int l =  v.second->getLabel();
+            if(l >=0){
+              v.second->computeFeatures();
+              //Store datapoints
+              d->addDataPoint(v.second->getFeatures(), l);
+            }
           }
         }
       }
+      _seed_resolution = original_seed_resolution;
     }
 
     return d;
