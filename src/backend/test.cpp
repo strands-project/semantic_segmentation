@@ -94,6 +94,12 @@ int main (int argc, char ** argv) {
       valid_points += v.second->getSize();
     }
 
+
+    float appearance_color_sigma = conf.get<float>("appearance_color_sigma");
+    float appearance_range_sigma = conf.get<float>("appearance_range_sigma");
+    float appearance_weight      = conf.get<float>("appearance_weight");
+    float smoothnes_range_sigma  = conf.get<float>("smoothnes_range_sigma");
+    float smoothnes_weight       = conf.get<float>("smoothnes_weight");
     DenseCRF crf(valid_points, label_converter.getValidLabelCount());
     Eigen::MatrixXf unary(label_converter.getValidLabelCount(), valid_points);
     Eigen::MatrixXf feature(6, valid_points);
@@ -107,13 +113,13 @@ int main (int argc, char ** argv) {
       forest->classLogPosterior(feat, probs);
       std::vector<float>::iterator result = std::max_element(probs.begin(), probs.end());
       v.second->drawValueIntoImage<int>(result_image, std::distance(probs.begin(), result));
-      v.second->addDataToCrfMats(unary, feature, feature2, index, probs);
+      v.second->addDataToCrfMats(unary, feature, feature2, index, probs, appearance_color_sigma, appearance_range_sigma, smoothnes_range_sigma);
     }
     crf.setUnaryEnergy( unary );
-    //crf.addPairwiseEnergy( feature, new PottsCompatibility( 10 ) );
-    crf.addPairwiseEnergy( feature2, new PottsCompatibility( 3 ) );
+    crf.addPairwiseEnergy( feature, new PottsCompatibility( appearance_weight ) );
+    crf.addPairwiseEnergy( feature2, new PottsCompatibility( smoothnes_weight ) );
 
-    Matrix<short,Dynamic,1> map = crf.map(10);
+    Matrix<short,Dynamic,1> map = crf.map(conf.get<int>("crf_iterations"));
     cv::Mat result_image_crf(color.rows, color.cols, CV_32SC1, cv::Scalar(-1));
     int* r_ptr = result_image_crf.ptr<int>(0);
     index = 0;

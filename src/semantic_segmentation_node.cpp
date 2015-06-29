@@ -90,6 +90,11 @@ std::cerr << "Done" << std::endl;
     ROS_INFO("Remaining valid points: %i", N);
 
     uint point_index = 0; //We can't use the point indices as these now have changed due to a set of missing ones.
+    float appearance_color_sigma = _conf.get<float>("appearance_color_sigma");
+    float appearance_range_sigma = _conf.get<float>("appearance_range_sigma");
+    float appearance_weight      = _conf.get<float>("appearance_weight");
+    float smoothnes_range_sigma  = _conf.get<float>("smoothnes_range_sigma");
+    float smoothnes_weight       = _conf.get<float>("smoothnes_weight");
     DenseCRF crf(N, _C);
     Eigen::MatrixXf unary(_C, N);
     Eigen::MatrixXf feature(6, N);
@@ -98,12 +103,13 @@ std::cerr << "Done" << std::endl;
     for(auto v : voxels){
       const libf::DataPoint& feat = v.second->getFeatures();
       _forest->classLogPosterior(feat, probs);
-      v.second->addDataToCrfMats(unary, feature, feature2, point_index, probs);
+      v.second->addDataToCrfMats(unary, feature, feature2, point_index, probs, appearance_color_sigma, appearance_range_sigma, smoothnes_range_sigma);
     }
     crf.setUnaryEnergy( unary );
-    crf.addPairwiseEnergy( feature, new PottsCompatibility( 10 ) );
-    crf.addPairwiseEnergy( feature2, new PottsCompatibility( 3 ) );
-    Eigen::MatrixXf map = crf.inference(1);
+    crf.addPairwiseEnergy( feature, new PottsCompatibility( appearance_weight ) );
+    crf.addPairwiseEnergy( feature2, new PottsCompatibility( smoothnes_weight ) );
+    Eigen::MatrixXf map = crf.inference(_conf.get<int>("crf_iterations"));
+
 
 
     std::vector<float> result_prob(N*_C, 0);

@@ -121,7 +121,10 @@ public:
                         Eigen::MatrixXf& pairwise1,
                         Eigen::MatrixXf& pairwise2,
                         uint& index,
-                        std::vector<float>& probability) const{
+                        std::vector<float>& probability,
+                        float appearance_color_sigma,
+                        float appearance_range_sigma,
+                        float smoothness_range_sigma) const{
     const int dim = probability.size();
     std::vector<float> negative_log;
     negative_log.reserve(dim);
@@ -137,17 +140,17 @@ public:
       }
 
       //Add the 3D location to both features.
-      pairwise1(0, index) = _cloud_ptr->points[p].x / 0.3f;
-      pairwise1(1, index) = _cloud_ptr->points[p].y / 0.3f;
-      pairwise1(2, index) = _cloud_ptr->points[p].z / 0.3f;
-      pairwise2(0, index) = _cloud_ptr->points[p].x / 0.1f;
-      pairwise2(1, index) = _cloud_ptr->points[p].y / 0.1f;
-      pairwise2(2, index) = _cloud_ptr->points[p].z / 0.1f;
+      pairwise1(0, index) = _cloud_ptr->points[p].x / appearance_range_sigma;
+      pairwise1(1, index) = _cloud_ptr->points[p].y / appearance_range_sigma;
+      pairwise1(2, index) = _cloud_ptr->points[p].z / appearance_range_sigma;
+      pairwise2(0, index) = _cloud_ptr->points[p].x / smoothness_range_sigma;
+      pairwise2(1, index) = _cloud_ptr->points[p].y / smoothness_range_sigma;
+      pairwise2(2, index) = _cloud_ptr->points[p].z / smoothness_range_sigma;
 
       //Add the color part to the first pairwise
-      pairwise1(3, index) = _cloud_ptr->points[p].r / 30.0f;
-      pairwise1(4, index) = _cloud_ptr->points[p].g / 30.0f;
-      pairwise1(5, index) = _cloud_ptr->points[p].b / 30.0f;
+      pairwise1(3, index) = _cloud_ptr->points[p].r / appearance_color_sigma;
+      pairwise1(4, index) = _cloud_ptr->points[p].g / appearance_color_sigma;
+      pairwise1(5, index) = _cloud_ptr->points[p].b / appearance_color_sigma;
 
       //Increment the index for the next point
       index++;

@@ -286,17 +286,27 @@
     ],
 
     // VCCS parameters
-    "voxel_resolution" : 0.03,
-    "seed_resolution" : 0.20,
-    "color_importance" : 1.0,
-    "spatial_importance" : 0.5,
-    "normal_importance" : 1.0,
-    "vccs_rectification" : false,
+    "voxel_resolution" :    0.05,
+    "seed_resolution" :     0.20,
+    "color_importance" :    1.0,
+    "spatial_importance" :  0.5,
+    "normal_importance" :   1.0,
+    "vccs_rectification" :  false,
 
-    "min_point_count" : 10,
+    "min_point_count" :     10,
+    "seed_jitter" : [-0.05, -0.025, 0.00, 0.025, 0.05],
 
-    "model_path" : "rf.dat",
-    "min_split_samples" : 30,
-    "max_depth" : 30,
-    "number_trees" : 64
+    // Dense CRF parameters
+    "crf_iterations" : 1,
+    "appearance_color_sigma" :  30.0,
+    "appearance_range_sigma" :  0.6,
+    "appearance_weight" :       10.0,
+    "smoothnes_range_sigma" :   0.15,
+    "smoothnes_weight" :        1.0,
+
+    // RF parameters
+    "model_path" :          "rf.dat",
+    "min_split_samples" :   30,
+    "max_depth" :           30,
+    "number_trees" :        64
 }
