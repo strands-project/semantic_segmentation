@@ -288,9 +288,9 @@
     // VCCS parameters
     "voxel_resolution" :    0.05,
     "seed_resolution" :     0.20,
-    "color_importance" :    1.0,
-    "spatial_importance" :  0.5,
-    "normal_importance" :   1.0,
+    "color_importance" :    0.2,
+    "spatial_importance" :  1.0,
+    "normal_importance" :   0.5,
     "vccs_rectification" :  false,
 
     "min_point_count" :     10,
