@@ -55,7 +55,19 @@ public:
 
   bool label_cloud(semantic_segmentation::LabelIntegratedPointCloud::Request  &req,
                    semantic_segmentation::LabelIntegratedPointCloud::Response &res){
-std::cerr << "Done" << std::endl;
+
+    //Check if this is a valid pointcloud
+    if(req.integrated_cloud.width*req.integrated_cloud.height == 0){
+      ROS_ERROR("Recived and empty cloud!");
+      res.index_to_label_name = _label_converter.getLabelNames();
+      res.label = std::vector<int>(0);
+      res.label_probabilities = std::vector<float>(0);
+      res.label_frequencies = std::vector<float>(0);
+      res.points = std::vector<geometry_msgs::Point32>(0);
+
+      return 0;
+    }
+
     //Get the cloud and convert it to a pcl format
     pcl::PCLPointCloud2 pcl_pc2;
     pcl_conversions::toPCL(req.integrated_cloud,pcl_pc2);
