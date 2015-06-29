@@ -221,8 +221,8 @@ void DataLoader::extractVoxels(pcl::PointCloud< pcl::PointXYZRGBA>::Ptr cloud, s
 
   //Look at the adjecency
   std::multimap<uint32_t, uint32_t> supervoxel_adjacency;
-  super.getSupervoxelAdjacency (supervoxel_adjacency);
-  std::multimap<uint32_t,uint32_t>::iterator label_itr = supervoxel_adjacency.begin ();
+  super.getSupervoxelAdjacency(supervoxel_adjacency);
+  std::multimap<uint32_t,uint32_t>::iterator label_itr = supervoxel_adjacency.begin();
   for ( ; label_itr != supervoxel_adjacency.end(); ){
     //First get the label
     uint supervoxel_label = label_itr->first;
@@ -234,7 +234,7 @@ void DataLoader::extractVoxels(pcl::PointCloud< pcl::PointXYZRGBA>::Ptr cloud, s
       voxel_storage[supervoxel_label]->addNeighborPoints(voxel_storage[neighrbor_label]->getFullCloudIndices());
     }
     //Move iterator forward to next label
-    label_itr = supervoxel_adjacency.upper_bound (supervoxel_label);
+    label_itr = supervoxel_adjacency.upper_bound(supervoxel_label);
   } 
 
 }
