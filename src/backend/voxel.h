@@ -26,6 +26,14 @@ public:
       _has_features(false){
   }
 
+  Voxel(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr voxel_ptr, int voxel_id, pcl::PointCloud<pcl::PointXYZRGBA>::Ptr full_cloud_ptr):
+      _cloud_ptr(voxel_ptr),
+      _voxel_id(voxel_id),
+      _label(-5),
+      _has_features(false),
+      _full_cloud_ptr(full_cloud_ptr){
+  }
+
   ~Voxel(){}
 
   void addPoint(int idx){
@@ -156,6 +164,19 @@ public:
       index++;
     }
   }
+#define BINS 15
+#define FEATURE_LENGTH 59
+
+  void computeFeatures(bool use_full = true){
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cld;
+    std::vector<int> indices;
+    if(use_full && _image_point_indices.size() != 0){
+      indices = _image_point_indices;
+      cld = _full_cloud_ptr;
+    }else{
+      indices = _point_indices;
+      cld = _cloud_ptr;
+    }
 
   void computeFeatures(){
     float x = 0, y = 0, z = 0;
@@ -192,7 +213,7 @@ public:
     float bb2;
     float bb3;
 
-    Eigen::Vector4f origin = _cloud_ptr->sensor_origin_;
+    Eigen::Vector4f origin = cld->sensor_origin_;
     Eigen::Vector4f centroid;
     centroid(0) = x;
     centroid(1) = y;
@@ -201,7 +222,7 @@ public:
 
     std::vector<float> features;
     Eigen::Matrix3f covariance_matrix;
-    pcl::computeCovarianceMatrix(*(_cloud_ptr), _point_indices, centroid, covariance_matrix);
+    pcl::computeCovarianceMatrix(*(cld), indices, centroid, covariance_matrix);
     Eigen::SelfAdjointEigenSolver<Eigen::Matrix3f> es(covariance_matrix);
 
     sigma_p = es.eigenvalues()(0) ; // was (2) at some point, but (0) is the smallest which makes the most sense!
@@ -239,10 +260,10 @@ public:
     const Eigen::Vector3f Dx = es.eigenvectors().col(0);
     const Eigen::Vector3f Dy = es.eigenvectors().col(1);
     const Eigen::Vector3f Dz = es.eigenvectors().col(2);
-    for (uint j = 0; j < _point_indices.size(); j++) {
-      Eigen::Vector3f W(_cloud_ptr->points[_point_indices[j]].x,
-                        _cloud_ptr->points[_point_indices[j]].y,
-                        _cloud_ptr->points[_point_indices[j]].z);
+    for (uint j = 0; j < indices.size(); j++) {
+      Eigen::Vector3f W(cld->points[indices[j]].x,
+                        cld->points[indices[j]].y,
+                        cld->points[indices[j]].z);
 
 
       float tmpx = W.dot(Dx);
@@ -340,4 +361,5 @@ private:
   std::vector<float> _class_distrubition;
   libf::DataPoint _features;
 
+  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr _full_cloud_ptr;
 };

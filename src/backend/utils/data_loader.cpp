@@ -202,7 +202,7 @@ void DataLoader::extractVoxels(pcl::PointCloud< pcl::PointXYZRGBA>::Ptr cloud, s
     int label =  labeled_voxel_cloud->points[j].label;
     if(label > 0){ // this is the voxel containing all remaining points, we don't care about it.
       if(voxel_storage.count(label) == 0) {
-        voxel_storage[label] = std::shared_ptr<Voxel>( new Voxel(voxelized_cloud, label));
+        voxel_storage[label] = std::shared_ptr<Voxel>( new Voxel(voxelized_cloud, label, cloud));
       }
       voxel_storage[label]->addPoint(j);
     }
