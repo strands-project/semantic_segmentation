@@ -18,6 +18,7 @@
 
 //Ros includes
 #include "ros/ros.h"
+#include "sensor_msgs/PointCloud2.h"
 
 //STL includes
 #include <exception>
@@ -33,14 +34,15 @@
 
 class Labeler{
 public:
-  Labeler(std::string config_file, std::string forest_file, ros::ServiceClient& cloud_service, ros::ServiceClient& origin_service) :
+  Labeler(std::string config_file, std::string forest_file, ros::ServiceClient& cloud_service, ros::ServiceClient& origin_service, ros::Publisher& cloud_publisher) :
     _conf(Utils::Config(config_file, std::map<std::string, std::string>())),
     _dl(Utils::DataLoader(_conf, false)),
     _label_converter(_dl.getLabelConverter()),
     _C(_label_converter.getValidLabelCount()),
     _minimum_points(_conf.get<int>("min_point_count")),
     _cloud_service(cloud_service),
-    _origin_service(origin_service){
+    _origin_service(origin_service),
+    _cloud_publisher(cloud_publisher){
     _forest = new libf::RandomForest<libf::DecisionTree>();
     std::filebuf fb;
     if (fb.open (forest_file,std::ios::in)){
@@ -76,6 +78,7 @@ public:
         //Get the origin
         cloud->sensor_origin_ = Eigen::Vector4f(origin_srv.response.origin.x, origin_srv.response.origin.y, origin_srv.response.origin.z, 1.0);
         ROS_INFO("Cloud received, a total of %lu points found", cloud->size());
+        _frame_id = srv.response.cloud.header.frame_id;
       }else{
         ROS_ERROR("Didn't receive an sensor origin for the cloud!");
       return false;
@@ -145,6 +148,12 @@ public:
     crf.addPairwiseEnergy( feature2, new PottsCompatibility( smoothnes_weight ) );
     Eigen::MatrixXf map = crf.inference(_conf.get<int>("crf_iterations"));
 
+    //Just for visualizing, the none voxelized stuff will be black, no time to remove them right now.
+    for(int i = 0; i < voxelized_cloud->size(); ++i){
+      voxelized_cloud->points[i].r = 0;
+      voxelized_cloud->points[i].g = 0;
+      voxelized_cloud->points[i].b = 0;
+    }
 
 
     std::vector<float> result_prob(N*_C, 0);
@@ -206,9 +215,45 @@ public:
       }
     }
 
+    _stored_waypoints[req.waypoint_id] = voxelized_cloud;
+    publish_clouds();
 
     //Done
     return true;
+  }
+
+private:
+  void publish_clouds(){
+    //fuse the pointclouds
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr fused(new pcl::PointCloud<pcl::PointXYZRGB>());
+
+    int size = 0;
+    for(auto cld : _stored_waypoints){
+      size += cld.second->size();
+    }
+
+    fused->points.reserve(size);
+    for(auto cld : _stored_waypoints){
+      for(auto p : cld.second->points){
+        fused->points.push_back(pcl::PointXYZRGB());
+        fused->points.back().x = p.x;
+        fused->points.back().y = p.y;
+        fused->points.back().z = p.z;
+        fused->points.back().r = p.r;
+        fused->points.back().g = p.g;
+        fused->points.back().b = p.b;
+      }
+    }
+
+    //convert to sensor_msgs/PointCloud2
+    sensor_msgs::PointCloud2 out;
+    pcl::toROSMsg<pcl::PointXYZRGB>(*fused,out);
+
+    out.header.frame_id = _frame_id;
+
+    //publish
+    _cloud_publisher.publish(out);
+
   }
 
 private:
@@ -220,6 +265,9 @@ private:
     int _minimum_points;
     ros::ServiceClient& _cloud_service;
     ros::ServiceClient& _origin_service;
+    ros::Publisher& _cloud_publisher;
+    std::map<std::string, pcl::PointCloud<pcl::PointXYZRGBA>::Ptr> _stored_waypoints;
+    std::string _frame_id;
 };
 
 int main(int argc, char **argv){
@@ -236,11 +284,14 @@ int main(int argc, char **argv){
   ros::ServiceClient client_get_cloud    = nh.serviceClient<semantic_map_publisher::ObservationService>("/semantic_map_publisher/SemanticMapPublisher/ObservationService");
   ros::ServiceClient client_cloud_origin = nh.serviceClient<semantic_map_publisher::SensorOriginService>("/semantic_map_publisher/SemanticMapPublisher/SensorOriginService");
 
+  //Advertise a topic for publishing the colored clouds.
+  ros::Publisher cloud_publisher = nh.advertise<sensor_msgs::PointCloud2>("/semantic_segmentation_clouds", 1, true);
+
 
   //The robot height is quick and dirty :( This is needed as the integrated clouds lack a sensor origin.
   std::shared_ptr<Labeler> l;
   try{
-    l = std::shared_ptr<Labeler>(new Labeler(argv[1], argv[2], client_get_cloud, client_cloud_origin));
+    l = std::shared_ptr<Labeler>(new Labeler(argv[1], argv[2], client_get_cloud, client_cloud_origin, cloud_publisher));
   } catch (std::exception& e){
     ROS_ERROR("%s",e.what());
     return 1;
@@ -248,6 +299,7 @@ int main(int argc, char **argv){
 
   //Advertise the service.
   ros::ServiceServer label_service = nh.advertiseService("label_integrated_cloud", &Labeler::label_cloud, l.get());
+
 
   ROS_INFO("Semantic segmentation service ready.");
   ros::spin();
