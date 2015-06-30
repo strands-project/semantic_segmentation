@@ -241,7 +241,7 @@ public:
     Eigen::Vector4f vp = centroid - origin;
     Eigen::Vector3f vp3;
     vp3 << vp(0), vp(1), vp(2);
-    if (vp3.dot (vn) < 0) {
+    if (vp3.dot(vn) < 0) {
       vn *= -1.0;
     }
 
@@ -284,7 +284,7 @@ public:
     int total_length = FEATURE_LENGTH + 3*BINS;
 
     if(_neighbor_points.size() > 0){
-      total_length *=2;
+      total_length = 2*total_length -2;
       indices.insert(indices.end(), _neighbor_points.begin(), _neighbor_points.end());
     }
 
@@ -387,18 +387,18 @@ public:
       float bby_max_n = std::numeric_limits<float>::max() * -1.0;
       float bbz_min_n = std::numeric_limits<float>::max();
       float bbz_max_n = std::numeric_limits<float>::max() * -1.0;
-      const Eigen::Vector3f Dx_n = es_n.eigenvectors().col(0);
-      const Eigen::Vector3f Dy_n = es_n.eigenvectors().col(1);
-      const Eigen::Vector3f Dz_n = es_n.eigenvectors().col(2);
+      // const Eigen::Vector3f Dx_n = es_n.eigenvectors().col(0);
+      // const Eigen::Vector3f Dy_n = es_n.eigenvectors().col(1);
+      // const Eigen::Vector3f Dz_n = es_n.eigenvectors().col(2);
       for (uint j = 0; j < indices.size(); j++) {
         Eigen::Vector3f W_n(cld->points[indices[j]].x,
                           cld->points[indices[j]].y,
                           cld->points[indices[j]].z);
 
 
-        float tmpx_n = W_n.dot(Dx_n);
-        float tmpy_n = W_n.dot(Dy_n);
-        float tmpz_n = W_n.dot(Dz_n);
+        float tmpx_n = W_n.dot(Dx);
+        float tmpy_n = W_n.dot(Dy);
+        float tmpz_n = W_n.dot(Dz);
 
         bbx_min_n = std::min(tmpx_n, bbx_min_n);
         bbx_max_n = std::max(tmpx_n, bbx_max_n);
@@ -415,22 +415,20 @@ public:
 
 
       _features(f_index++) = z_n;
-      for(float h : hist_n){
-        _features(f_index++) = h;
+      for(int h = 0; h < hist_n.size(); ++h){
+        _features(f_index++) = hist_n[h] - hist[h];
       }
-      _features(f_index++) = sigma_p_n;
-      _features(f_index++) = sigma_s_n;
-      _features(f_index++) = sigma_l_n;
-      _features(f_index++) = curvature_n;
-      _features(f_index++) = vn_n(0) / vn_n.norm();
-      _features(f_index++) = vn_n(1) / vn_n.norm();
-      _features(f_index++) = vn_n(2) / vn_n.norm();
-      _features(f_index++) = acos(vn_n(2) / vn_n.norm()); //angle between normal and up vector.
-      _features(f_index++) = nah_n;
-      _features(f_index++) = tah_n;
-      _features(f_index++) = bb1_n;
-      _features(f_index++) = bb2_n;
-      _features(f_index++) = bb3_n;
+      _features(f_index++) = sigma_p_n - sigma_p;
+      _features(f_index++) = sigma_s_n - sigma_s;
+      _features(f_index++) = sigma_l_n = sigma_l;
+      _features(f_index++) = curvature_n - curvature;
+      _features(f_index++) = acos(std::max(-1.0f,std::min(1.0f,vn_n(0) / vn_n.norm() * vn(0) / vn.norm() + vn_n(1) / vn_n.norm() * vn(1) / vn.norm() + vn_n(2) / vn_n.norm() * vn(2) / vn.norm())));
+      _features(f_index++) = acos(vn_n(2) / vn_n.norm()) - acos(vn_n(2) / vn_n.norm());
+      _features(f_index++) = nah_n - nah;
+      _features(f_index++) = tah_n - tah;
+      _features(f_index++) = bb1_n - bb1;
+      _features(f_index++) = bb2_n - bb2;
+      _features(f_index++) = bb3_n - bb3;
     }
 
     for(int i = 0; i < total_length; i++){
@@ -477,5 +475,5 @@ private:
   libf::DataPoint _features;
   pcl::PointCloud<pcl::PointXYZRGBA>::Ptr _full_cloud_ptr;
 
-  std::vector<int>> _neighbor_points;
+  std::vector<int> _neighbor_points;
 };
