@@ -1,13 +1,53 @@
+# Created by https://www.gitignore.io
+
+# Ignore generated docs
+*.dox
+*.wikidoc
+
+# eclipse stuff
+.project
+.cproject
+
+# qcreator stuff
+CMakeLists.txt.user
+
+srv/_*.py
+*.pcd
+*.pyc
+qtcreator-*
+*.user
+
+/planning/cfg
+/planning/docs
+/planning/src
+
+*~
+
+# Emacs
+.#*
+
+# Catkin custom files
+CATKIN_IGNORE
+
+
+### C++ ###
 # Compiled Object files
 *.slo
 *.lo
 *.o
 *.obj
 
+# Precompiled Headers
+*.gch
+*.pch
+
 # Compiled Dynamic libraries
 *.so
 *.dylib
 *.dll
+
+# Fortran module files
+*.mod
 
 # Compiled Static libraries
 *.lai
@@ -20,4 +60,22 @@
 *.out
 *.app
 
+
+### CMake ###
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+install_manifest.txt
+
+# own stuff
+#for training using my plain executables.
+src/backend/build/*
+#we don't want to forest dat
+resources/*.dat
+#nobody else has push rights anyways.
+scripts/upload_rf.sh
+
+# vim stuff
 *.swp
+*.swo
