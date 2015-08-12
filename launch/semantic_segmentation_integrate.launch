@@ -10,6 +10,6 @@
   <machine name="$(arg machine)" address="$(arg machine)" env-loader="$(optenv ROS_ENV_LOADER )" user="$(arg user)" default="true" />
 
   <!-- The actual semantic segmentation service node -->
-  <node machine="$(arg machine)" pkg="semantic_segmentation" type="semantic_segmentation_node" name="semantic_segmentation_node" output="screen" args="$(arg config_file) $(arg forest_file)"/>
+  <node machine="$(arg machine)" pkg="semantic_segmentation" type="semantic_segmentation_integrate_node" name="semantic_segmentation_integrate_node" output="screen" args="$(arg config_file) $(arg forest_file)"/>
 
 </launch>

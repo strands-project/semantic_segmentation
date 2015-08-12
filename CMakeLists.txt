@@ -65,6 +65,7 @@ add_subdirectory(src/backend)
 add_service_files(
   FILES
   LabelIntegratedPointCloud.srv
+  LabelIntegratedPointInstanceCloud.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -116,12 +117,14 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-add_executable(semantic_segmentation_node src/semantic_segmentation_node.cpp ${strands_semantic_segmentation_SOURCES})
+
+add_executable(semantic_segmentation_integrate_node src/semantic_segmentation_integrate_node.cpp ${strands_semantic_segmentation_SOURCES})
 add_executable(dummy_client src/dummy_client.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(semantic_segmentation_node semantic_segmentation_generate_messages_cpp semantic_map_publisher_generate_messages_cpp)
+
+add_dependencies(semantic_segmentation_integrate_node semantic_segmentation_generate_messages_cpp semantic_map_publisher_generate_messages_cpp)
 add_dependencies(dummy_client semantic_segmentation_generate_messages_cpp)
 
 
@@ -148,12 +151,14 @@ target_link_libraries(visualize libforest ${OpenCV_LIBS} ${PCL_COMMON_LIBRARIES}
 
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(semantic_segmentation_node
+
+target_link_libraries(semantic_segmentation_integrate_node
   libforest
   densecrf
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
 )
+
 target_link_libraries(dummy_client
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
