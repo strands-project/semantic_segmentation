@@ -2,6 +2,11 @@
 Changelog for package semantic_segmentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updated with missing release bits
+* Contributors: Nick Hawes
+
 0.0.1 (2016-06-06)
 ------------------
   Fixing resource path.
