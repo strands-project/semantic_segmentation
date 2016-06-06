@@ -2,8 +2,8 @@
 Changelog for package semantic_segmentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2016-06-06)
+------------------
   Fixing resource path.
 * Fixing resource path.\nThis now works with rosrun a bit better.
 * Update README.md
