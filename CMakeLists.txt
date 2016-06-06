@@ -18,10 +18,16 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+
 find_package(PCL 1.7 REQUIRED)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
+
+
+set(CURSES_NEED_NCURSES TRUE) 
+find_package(Curses REQUIRED) 
+include_directories(${CURSES_INCLUDE_DIRS})
 
 add_subdirectory(src/backend)
 
