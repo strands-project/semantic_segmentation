@@ -2,8 +2,8 @@
 Changelog for package semantic_segmentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2016-06-06)
+------------------
 * Updated with missing release bits
 * Contributors: Nick Hawes
 
