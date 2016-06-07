@@ -2,6 +2,9 @@
 Changelog for package semantic_segmentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.4 (2016-06-07)
 ------------------
 
