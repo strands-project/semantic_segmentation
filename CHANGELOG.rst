@@ -2,6 +2,9 @@
 Changelog for package semantic_segmentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.3 (2016-06-06)
 ------------------
 * Merge branch 'master' of https://github.com/strands-project/semantic_segmentation
